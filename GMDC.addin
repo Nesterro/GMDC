@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>GMDC Plugin</Name>
+    <Assembly>GMDC.dll</Assembly>
+    <ClientId>B84F0BD8-B4C1-4D56-A833-F9632822B7E1</ClientId>
+    <FullClassName>GMDC.App</FullClassName>
+    <VendorId>GMDC</VendorId>
+    <VendorDescription>GMDC Revit Plugin</VendorDescription>
+  </AddIn>
+</RevitAddIns>

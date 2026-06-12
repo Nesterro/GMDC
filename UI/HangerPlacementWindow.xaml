@@ -1,0 +1,304 @@
+<Window x:Class="GMDC.UI.HangerPlacementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GMDC - Расстановка крепежа" Height="550" Width="820"
+        WindowStartupLocation="CenterOwner"
+        Background="#121212" TextElement.Foreground="#E0E0E0"
+        FontFamily="Segoe UI" FontSize="13" ResizeMode="NoResize">
+    <Window.Resources>
+        <!-- Modern Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3F3F46"/>
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#3bb700"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#3bb700"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4ce600"/>
+                    <Setter Property="BorderBrush" Value="#4ce600"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern TextBox -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern ComboBox -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsDropDownOpen" Value="True">
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern RadioButton -->
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <!-- Card Style Border -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="#2D2D30"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#3bb700"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- DataGrid Styling -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#121212"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#2D2D30"/>
+            <Setter Property="RowBackground" Value="#1E1E1E"/>
+            <Setter Property="AlternatingRowBackground" Value="#252526"/>
+            <Setter Property="GridLinesVisibility" Value="All"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#2D2D30"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#2D2D30"/>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderBrush" Value="#2D2D30"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#3bb700"/>
+                    <Setter Property="Foreground" Value="#000000"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Content -->
+            <RowDefinition Height="*"/>
+            <!-- Footer -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,0,5,15">
+            <Border Width="12" Height="24" Background="#3bb700" CornerRadius="2" Margin="0,0,10,0"/>
+            <TextBlock Text="GMDC HANGER PLACEMENT" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Content Area -->
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <!-- Left: Family selection, Offsets, Scope -->
+                <ColumnDefinition Width="4*"/>
+                <!-- Splitter Spacer -->
+                <ColumnDefinition Width="10"/>
+                <!-- Right: Rules DataGrid -->
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: Parameters -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <!-- Family & Scope -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Spacer -->
+                    <RowDefinition Height="10"/>
+                    <!-- Offsets Card -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Family & Scope -->
+                <Border Grid.Row="0" Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Выбор семейства и область" Style="{StaticResource SectionHeader}"/>
+
+                        <!-- Family Symbol Dropdown -->
+                        <TextBlock Text="Семейство крепления:" Margin="0,0,0,5" Foreground="#888888"/>
+                        <ComboBox x:Name="HangerFamilyCombo" Margin="0,0,0,12"/>
+
+                        <!-- Scope Selection -->
+                        <TextBlock Text="Область расстановки:" Margin="0,0,0,5" Foreground="#888888"/>
+                        <RadioButton x:Name="ScopeSelectedRadio" Content="Выбранные лотки" IsChecked="True"/>
+                        <RadioButton x:Name="ScopeViewRadio" Content="Лотки на активном виде"/>
+                        <RadioButton x:Name="ScopeProjectRadio" Content="Все лотки в проекте"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Offsets Card -->
+                <Border Grid.Row="2" Style="{StaticResource CardBorder}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel>
+                            <TextBlock Text="Геометрические настройки" Style="{StaticResource SectionHeader}"/>
+
+                            <!-- Start Offset -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Отступ от начала (мм):" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+                                <TextBox Grid.Column="2" x:Name="StartOffsetTextBox" Text="300" HorizontalContentAlignment="Right"/>
+                            </Grid>
+
+                            <!-- End Offset -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Отступ от конца (мм):" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+                                <TextBox Grid.Column="2" x:Name="EndOffsetTextBox" Text="300" HorizontalContentAlignment="Right"/>
+                            </Grid>
+
+                            <!-- Vertical Offset -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Смещение по высоте (мм):" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+                                <TextBox Grid.Column="2" x:Name="VerticalOffsetTextBox" Text="0" HorizontalContentAlignment="Right" ToolTip="Смещение вверх/вниз относительно низа лотка"/>
+                            </Grid>
+
+                            <!-- Angle rotation offset -->
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Поворот семейства:" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+                                <ComboBox Grid.Column="2" x:Name="RotationCombo">
+                                    <ComboBoxItem Content="0°" IsSelected="True"/>
+                                    <ComboBoxItem Content="90°"/>
+                                    <ComboBoxItem Content="180°"/>
+                                    <ComboBoxItem Content="270°"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- Right Panel: Spacing Rules Table -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Шаг в зависимости от ширины лотка" Style="{StaticResource SectionHeader}"/>
+
+                    <!-- Data Grid representing Spacing Rules -->
+                    <DataGrid Grid.Row="1" x:Name="RulesDataGrid" AutoGenerateColumns="False" CanUserAddRows="False" 
+                              HeadersVisibility="Column" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Ширина лотка до (мм)" Binding="{Binding MaxWidth, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                            <DataGridTextColumn Header="Шаг расстановки (мм)" Binding="{Binding Spacing, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Add/Delete Rule Actions -->
+                    <Grid Grid.Row="2" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Добавить строку" Click="AddRule_Click" Padding="5,4"/>
+                        <Button Grid.Column="2" Content="Удалить строку" Click="DeleteRule_Click" Padding="5,4"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Footer -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Сохранить конфиг" Click="SaveConfig_Click"/>
+            <Button Grid.Column="2" Content="Загрузить конфиг" Click="LoadConfig_Click"/>
+
+            <Button Grid.Column="4" Content="Расставить" Style="{StaticResource AccentButton}" Width="120" Click="Place_Click"/>
+            <Button Grid.Column="6" Content="Закрыть" Width="100" Click="Close_Click"/>
+        </Grid>
+    </Grid>
+</Window>

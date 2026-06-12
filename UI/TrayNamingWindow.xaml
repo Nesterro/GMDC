@@ -1,0 +1,244 @@
+<Window x:Class="GMDC.UI.TrayNamingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GMDC - Наименование лотков" Height="500" Width="750"
+        WindowStartupLocation="CenterOwner"
+        Background="#121212" TextElement.Foreground="#E0E0E0"
+        FontFamily="Segoe UI" FontSize="13" ResizeMode="NoResize">
+    <Window.Resources>
+        <!-- Modern Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3F3F46"/>
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#3bb700"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#3bb700"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4ce600"/>
+                    <Setter Property="BorderBrush" Value="#4ce600"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern TextBox -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern ComboBox -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsDropDownOpen" Value="True">
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern RadioButton -->
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <!-- Card Style Border -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="#2D2D30"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#3bb700"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Content -->
+            <RowDefinition Height="*"/>
+            <!-- Footer -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,0,5,15">
+            <Border Width="12" Height="24" Background="#3bb700" CornerRadius="2" Margin="0,0,10,0"/>
+            <TextBlock Text="GMDC CABLE TRAY NAMING" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Content Area -->
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: Scope and Available Parameters -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Scope Selection Card -->
+                <Border Grid.Row="0" Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Область обработки" Style="{StaticResource SectionHeader}"/>
+                        <RadioButton x:Name="ScopeSelectedRadio" Content="Выбранные лотки" IsChecked="True"/>
+                        <RadioButton x:Name="ScopeViewRadio" Content="Лотки на активном виде"/>
+                        <RadioButton x:Name="ScopeProjectRadio" Content="Все лотки в проекте"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Available Parameters List Card -->
+                <Border Grid.Row="2" Style="{StaticResource CardBorder}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Параметры лотка" Style="{StaticResource SectionHeader}"/>
+
+                        <!-- Parameters list for selection -->
+                        <ListBox Grid.Row="1" x:Name="ParametersListBox" Background="#121212" BorderBrush="#2D2D30" 
+                                 BorderThickness="1" Foreground="#FFFFFF" MouseDoubleClick="ParametersListBox_MouseDoubleClick">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="6,4"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#2D2D30"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+
+                        <TextBlock Grid.Row="2" Text="* Дважды кликните по параметру для вставки в шаблон" 
+                                   Foreground="#888888" FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Right Panel: Template and Target -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Шаблон наименования" Style="{StaticResource SectionHeader}"/>
+
+                    <!-- Target Parameter Selection -->
+                    <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                        <TextBlock Text="Записать в параметр:" Margin="0,0,0,5" Foreground="#888888"/>
+                        <ComboBox x:Name="TargetParamCombo"/>
+                    </StackPanel>
+
+                    <!-- Template Textbox -->
+                    <StackPanel Grid.Row="2" Margin="0,0,0,15">
+                        <TextBlock Text="Шаблон (используйте фигурные скобки):" Margin="0,0,0,5" Foreground="#888888"/>
+                        <TextBox x:Name="TemplateTextBox" Height="80" TextWrapping="Wrap" 
+                                 AcceptsReturn="True" VerticalContentAlignment="Top" TextChanged="TemplateTextBox_TextChanged"/>
+                        <TextBlock Text="Пример: {Type Name} Лоток {Width}x{Height}" Foreground="#555555" FontSize="11" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- Live Preview area -->
+                    <Grid Grid.Row="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Предварительный просмотр:" Margin="0,0,0,5" Foreground="#888888"/>
+                        <Border Grid.Row="1" Background="#121212" BorderBrush="#2D2D30" BorderThickness="1" CornerRadius="4" Padding="10">
+                            <TextBlock x:Name="PreviewTextBlock" TextWrapping="Wrap" VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center" Foreground="#3bb700" FontWeight="SemiBold" FontSize="14" Text="[Введите шаблон или выберите параметры]"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Footer Buttons -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Сохранить шаблон" Click="SaveTemplate_Click"/>
+            <Button Grid.Column="2" Content="Загрузить шаблон" Click="LoadTemplate_Click"/>
+
+            <Button Grid.Column="4" Content="Запустить" Style="{StaticResource AccentButton}" Width="120" Click="Run_Click"/>
+            <Button Grid.Column="6" Content="Закрыть" Width="100" Click="Close_Click"/>
+        </Grid>
+    </Grid>
+</Window>

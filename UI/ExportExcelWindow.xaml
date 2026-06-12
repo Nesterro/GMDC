@@ -1,0 +1,354 @@
+<Window x:Class="GMDC.UI.ExportExcelWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GMDC - Экспорт в Excel" Height="600" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Background="#121212" TextElement.Foreground="#E0E0E0"
+        FontFamily="Segoe UI" FontSize="13" ResizeMode="NoResize">
+    <Window.Resources>
+        <!-- Modern ScrollViewer Style -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+
+        <!-- Modern Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3F3F46"/>
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Accent Action Button -->
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#3bb700"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#3bb700"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4ce600"/>
+                    <Setter Property="BorderBrush" Value="#4ce600"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern TextBox Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern ComboBox Style -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsDropDownOpen" Value="True">
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern CheckBox Style -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <!-- Modern RadioButton Style -->
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <!-- Header Border Style -->
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#3bb700"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Card Style Border -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="#2D2D30"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <!-- Title Bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Main Content -->
+            <RowDefinition Height="*"/>
+            <!-- Bottom Buttons -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,0,5,15">
+            <Border Width="12" Height="24" Background="#3bb700" CornerRadius="2" Margin="0,0,10,0"/>
+            <TextBlock Text="GMDC EXCEL EXPORTER" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+            <TextBlock Text="v1.0" FontSize="12" Foreground="#888888" Margin="8,0,0,-4" VerticalAlignment="Bottom"/>
+        </StackPanel>
+
+        <!-- Main Panel Split -->
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <!-- Left: Schedule List -->
+                <ColumnDefinition Width="4*"/>
+                <!-- Splitter -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- Right: Export & Formatting Settings -->
+                <ColumnDefinition Width="5*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Schedule list card -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Выбор ведомостей" Style="{StaticResource SectionHeader}"/>
+
+                    <!-- Search Box -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <TextBox x:Name="SearchTextBox" TextChanged="SearchTextBox_TextChanged" 
+                                 Tag="Поиск ведомости..." Background="#121212"/>
+                        <TextBlock Text="Поиск ведомости..." Foreground="#555555" IsHitTestVisible="False" 
+                                   Margin="8,6" VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=SearchTextBox, Path=Text}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
+                    <!-- Schedules Listbox -->
+                    <ListBox Grid.Row="2" x:Name="SchedulesListBox" Background="#121212" BorderBrush="#2D2D30" 
+                             BorderThickness="1" Foreground="#FFFFFF" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsChecked}" Margin="2,4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="280"/>
+                                </CheckBox>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="Margin" Value="0,1"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#2D2D30"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+
+                    <!-- Selection Helper buttons -->
+                    <Grid Grid.Row="3" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="Выбрать все" Click="SelectAll_Click" Padding="5,4"/>
+                        <Button Grid.Column="2" Content="Снять выделение" Click="SelectNone_Click" Padding="5,4"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Splitter Spacer -->
+            <Grid Grid.Column="1" Width="10"/>
+
+            <!-- Right: Settings Panel -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <!-- Settings Card -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Spacer -->
+                    <RowDefinition Height="10"/>
+                    <!-- Format Card -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Export Mode Settings -->
+                <Border Grid.Row="0" Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Настройки сохранения" Style="{StaticResource SectionHeader}"/>
+
+                        <!-- Save Modes -->
+                        <RadioButton x:Name="SingleFileRadio" Content="Экспорт в один файл (разные листы)" IsChecked="True" Checked="ExportMode_Changed"/>
+                        <RadioButton x:Name="MultipleFilesRadio" Content="Экспорт в разные файлы" Checked="ExportMode_Changed"/>
+
+                        <!-- File / Directory Path Selector -->
+                        <TextBlock Text="Путь сохранения:" Foreground="#888888" Margin="0,10,0,5" FontSize="11"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" x:Name="PathTextBox" IsReadOnly="True" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                            <Button Grid.Column="2" Content="Обзор..." Click="BrowsePath_Click"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Formatting Settings -->
+                <Border Grid.Row="2" Style="{StaticResource CardBorder}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" Text="Настройки форматирования" Style="{StaticResource SectionHeader}"/>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="0,0,10,0">
+                                <!-- Base formatting options -->
+                                <CheckBox x:Name="AutofitCheck" Content="Автоподбор ширины столбцов" IsChecked="True"/>
+                                <CheckBox x:Name="ShowGridlinesCheck" Content="Отображать сетку таблицы" IsChecked="True"/>
+                                <CheckBox x:Name="ExportTitleCheck" Content="Экспортировать заголовок ведомости" IsChecked="True"/>
+                                <CheckBox x:Name="ExportHeadersCheck" Content="Экспортировать заголовки столбцов" IsChecked="True"/>
+                                
+                                <Separator Background="#2D2D30" Margin="0,12"/>
+
+                                <!-- Styling options -->
+                                <TextBlock Text="Стиль шапки таблицы:" Margin="0,0,0,5" FontWeight="SemiBold"/>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Цвет фона шапки:" VerticalAlignment="Center" Foreground="#888888"/>
+                                    <ComboBox Grid.Column="2" x:Name="HeaderColorCombo">
+                                        <ComboBoxItem Content="Зеленый GMDC (#3bb700)" IsSelected="True"/>
+                                        <ComboBoxItem Content="Темно-серый"/>
+                                        <ComboBoxItem Content="Светло-серый"/>
+                                        <ComboBoxItem Content="Без заливки"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <CheckBox x:Name="HeaderBoldCheck" Content="Жирный шрифт для шапки" IsChecked="True"/>
+
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Размер шрифта шапки:" VerticalAlignment="Center" Foreground="#888888"/>
+                                    <ComboBox Grid.Column="2" x:Name="HeaderFontSizeCombo">
+                                        <ComboBoxItem Content="10"/>
+                                        <ComboBoxItem Content="11" IsSelected="True"/>
+                                        <ComboBoxItem Content="12"/>
+                                        <ComboBoxItem Content="14"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Шрифт таблицы:" VerticalAlignment="Center" Foreground="#888888"/>
+                                    <ComboBox Grid.Column="2" x:Name="FontFamilyCombo">
+                                        <ComboBoxItem Content="Arial" IsSelected="True"/>
+                                        <ComboBoxItem Content="Calibri"/>
+                                        <ComboBoxItem Content="Segoe UI"/>
+                                        <ComboBoxItem Content="Times New Roman"/>
+                                    </ComboBox>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Bottom Actions -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Сохранить конфиг" Click="SaveConfig_Click"/>
+            <Button Grid.Column="2" Content="Загрузить конфиг" Click="LoadConfig_Click"/>
+
+            <Button Grid.Column="4" Content="Экспорт" Style="{StaticResource AccentButton}" Width="120" Click="Export_Click"/>
+            <Button Grid.Column="6" Content="Закрыть" Width="100" Click="Close_Click"/>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,30 @@
+# Build outputs
+bin/
+obj/
+Publish/
+
+# IDE files
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Revit backup files and journals
+*.00??.rvt
+*.00??.rfa
+*.log
+*.dump
+*.backup
+
+# GMDC local config files (if saved in project folder)
+*export_excel_config.json
+*tray_naming_config.json
+*hanger_placement_config.json
