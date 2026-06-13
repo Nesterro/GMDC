@@ -254,11 +254,20 @@ namespace GMDC.Commands
                         // Write standard data row
                         for (int c = 0; c < totalCols; c++)
                         {
-                            string text = c < cells.Count ? cells[c] : string.Empty;
+                            string text = c < cells.Count ? cells[c].Trim() : string.Empty;
+                            if (text == "\"\"" || text == "\"")
+                            {
+                                text = string.Empty;
+                            }
+
                             var cell = worksheet.Cell(currentExcelRow, c + 1);
 
+                            if (string.IsNullOrEmpty(text))
+                            {
+                                cell.Value = string.Empty;
+                            }
                             // Try parsing numbers to store them as actual numbers in Excel (instead of strings)
-                            if (double.TryParse(text.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double num))
+                            else if (double.TryParse(text.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double num))
                             {
                                 cell.Value = num;
                             }
@@ -312,14 +321,21 @@ namespace GMDC.Commands
                 char c = line[i];
                 if (c == '"')
                 {
-                    if (i + 1 < line.Length && line[i + 1] == '"')
+                    if (inQuotes)
                     {
-                        currentCell.Append('"');
-                        i++;
+                        if (i + 1 < line.Length && line[i + 1] == '"')
+                        {
+                            currentCell.Append('"');
+                            i++;
+                        }
+                        else
+                        {
+                            inQuotes = false;
+                        }
                     }
                     else
                     {
-                        inQuotes = !inQuotes;
+                        inQuotes = true;
                     }
                 }
                 else if (c == '\t' && !inQuotes)
