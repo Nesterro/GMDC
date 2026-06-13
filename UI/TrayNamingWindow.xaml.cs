@@ -73,36 +73,13 @@ namespace GMDC.UI
                 TargetParamCombo.SelectedIndex = 0;
             }
 
-            // Style the internal TextBox of the editable ComboBox when it loads to override default system theme colors
+            // Style the internal controls of the ComboBox when it loads to override system theme overrides
             TargetParamCombo.Loaded += (s, e) =>
             {
-                var tb = FindVisualChild<TextBox>(TargetParamCombo);
-                if (tb != null)
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
                 {
-                    var darkBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30)); // #1E1E1E
-                    tb.Background = darkBrush;
-                    tb.Foreground = Brushes.White;
-                    tb.CaretBrush = Brushes.White;
-                    tb.BorderThickness = new Thickness(0);
-                    tb.VerticalContentAlignment = VerticalAlignment.Center;
-                    
-                    // Force the background/foreground to stay dark on focus/input events
-                    tb.GotFocus += (sender, args) =>
-                    {
-                        tb.Background = darkBrush;
-                        tb.Foreground = Brushes.White;
-                    };
-                    tb.LostFocus += (sender, args) =>
-                    {
-                        tb.Background = darkBrush;
-                        tb.Foreground = Brushes.White;
-                    };
-                    tb.TextChanged += (sender, args) =>
-                    {
-                        tb.Background = darkBrush;
-                        tb.Foreground = Brushes.White;
-                    };
-                }
+                    ForceDarkTheme(TargetParamCombo);
+                }));
             };
 
             // Load default configuration
@@ -268,26 +245,48 @@ namespace GMDC.UI
             Close();
         }
 
-        private static T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        private static void ForceDarkTheme(DependencyObject obj)
         {
+            if (obj == null) return;
+
+            var darkBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30)); // #1E1E1E
+            var borderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(63, 63, 70)); // #3F3F46
+
+            if (obj is TextBox tb)
+            {
+                tb.Background = darkBrush;
+                tb.Foreground = Brushes.White;
+                tb.CaretBrush = Brushes.White;
+                tb.BorderThickness = new Thickness(0);
+                tb.VerticalContentAlignment = VerticalAlignment.Center;
+                
+                // Keep colors intact during user interactions
+                tb.GotFocus += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
+                tb.LostFocus += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
+                tb.TextChanged += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
+            }
+            else if (obj is System.Windows.Controls.Primitives.ToggleButton toggleBtn)
+            {
+                toggleBtn.Background = darkBrush;
+                toggleBtn.Foreground = Brushes.White;
+                toggleBtn.BorderBrush = borderBrush;
+            }
+            else if (obj is Border border)
+            {
+                border.Background = darkBrush;
+                border.BorderBrush = borderBrush;
+            }
+            else if (obj is System.Windows.Controls.Control ctrl && !(ctrl is ComboBox))
+            {
+                ctrl.Background = darkBrush;
+                ctrl.Foreground = Brushes.White;
+                ctrl.BorderBrush = borderBrush;
+            }
+
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null)
-                {
-                    if (child is T tChild)
-                    {
-                        return tChild;
-                    }
-                    
-                    T? childOfChild = FindVisualChild<T>(child);
-                    if (childOfChild != null)
-                    {
-                        return childOfChild;
-                    }
-                }
+                ForceDarkTheme(VisualTreeHelper.GetChild(obj, i));
             }
-            return null;
         }
     }
 
