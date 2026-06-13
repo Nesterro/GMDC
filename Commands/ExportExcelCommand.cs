@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -130,125 +131,209 @@ namespace GMDC.Commands
             worksheet.Style.Font.FontName = settings.FontFamily;
             worksheet.ShowGridLines = settings.ShowGridlines;
 
-            TableData tableData = schedule.GetTableData();
-            TableSectionData bodySection = tableData.GetSectionData(SectionType.Body);
+            string tempFolder = Path.GetTempPath();
+            string tempFileName = Guid.NewGuid().ToString() + ".txt";
+            string tempFilePath = Path.Combine(tempFolder, tempFileName);
 
-            int totalRows = bodySection.NumberOfRows;
-            int totalCols = bodySection.NumberOfColumns;
-
-            // Fetch Headers from Schedule Field column headers (only visible ones)
-            var visibleHeaders = new List<string>();
-            ScheduleDefinition definition = schedule.Definition;
-            for (int i = 0; i < definition.GetFieldCount(); i++)
+            try
             {
-                ScheduleField field = definition.GetField(i);
-                if (!field.IsHidden)
+                // Native Revit export options to export EXACT visual representation of the schedule
+                var options = new ViewScheduleExportOptions
                 {
-                    visibleHeaders.Add(field.ColumnHeading);
-                }
-            }
+                    FieldDelimiter = "\t",
+                    Title = false,
+                    ColumnHeaders = ExportColumnHeaders.OneRow,
+                    HeadersFootersBlanks = true,
+                    TextQualifier = ExportTextQualifier.DoubleQuote
+                };
 
-            // Fallback if mismatch
-            while (visibleHeaders.Count < totalCols)
-            {
-                visibleHeaders.Add($"Столбец {visibleHeaders.Count + 1}");
-            }
+                schedule.Export(tempFolder, tempFileName, options);
 
-            int currentExcelRow = 1;
+                if (!File.Exists(tempFilePath)) return;
 
-            // 1. Export Title
-            if (settings.ExportTitle)
-            {
-                worksheet.Cell(currentExcelRow, 1).Value = schedule.Name;
-                worksheet.Cell(currentExcelRow, 1).Style.Font.Bold = true;
-                
-                int titleSize = 11;
-                if (int.TryParse(settings.HeaderFontSize, out int parsedSize))
+                // Read all exported text lines (encoded in UTF-8 by Revit)
+                string[] lines = File.ReadAllLines(tempFilePath, Encoding.UTF8);
+                try { File.Delete(tempFilePath); } catch { } // Cleanup immediately
+
+                if (lines.Length == 0) return;
+
+                // 1. Parse Headers from the first line of exported TSV (matches visual order 100%)
+                List<string> headers = ParseCsvLine(lines[0]);
+                int totalCols = headers.Count;
+                int currentExcelRow = 1;
+
+                // 2. Export Title
+                if (settings.ExportTitle)
                 {
-                    titleSize = parsedSize + 3;
-                }
-                worksheet.Cell(currentExcelRow, 1).Style.Font.FontSize = titleSize;
-                worksheet.Cell(currentExcelRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
-                
-                // Merge title over columns
-                if (totalCols > 1)
-                {
-                    worksheet.Range(currentExcelRow, 1, currentExcelRow, totalCols).Merge();
-                }
+                    worksheet.Cell(currentExcelRow, 1).Value = schedule.Name;
+                    worksheet.Cell(currentExcelRow, 1).Style.Font.Bold = true;
 
-                currentExcelRow += 2; // title, then blank row
-            }
-
-            // 2. Export Headers
-            if (settings.ExportHeaders)
-            {
-                for (int c = 0; c < totalCols; c++)
-                {
-                    var cell = worksheet.Cell(currentExcelRow, c + 1);
-                    cell.Value = visibleHeaders[c];
-                    
-                    // Formatting headers
-                    cell.Style.Font.Bold = settings.HeaderBold;
-                    if (double.TryParse(settings.HeaderFontSize, out double fontSize))
+                    int titleSize = 11;
+                    if (int.TryParse(settings.HeaderFontSize, out int parsedSize))
                     {
-                        cell.Style.Font.FontSize = fontSize;
+                        titleSize = parsedSize + 3;
+                    }
+                    worksheet.Cell(currentExcelRow, 1).Style.Font.FontSize = titleSize;
+                    worksheet.Cell(currentExcelRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+
+                    // Merge title over columns
+                    if (totalCols > 1)
+                    {
+                        worksheet.Range(currentExcelRow, 1, currentExcelRow, totalCols).Merge();
                     }
 
-                    // Apply Header Color
-                    ApplyHeaderStyle(cell, settings.HeaderColorIndex);
-                    
-                    // Alignments
-                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                    cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                    cell.Style.Alignment.WrapText = true;
+                    currentExcelRow += 2; // title, then blank row
                 }
-                
-                // Set Header row height
-                worksheet.Row(currentExcelRow).Height = 26;
-                currentExcelRow++;
-            }
 
-            // 3. Export Data Body
-            for (int r = 0; r < totalRows; r++)
-            {
-                for (int c = 0; c < totalCols; c++)
+                // 3. Export Headers
+                if (settings.ExportHeaders)
                 {
-                    string text = bodySection.GetCellText(r, c);
-                    var cell = worksheet.Cell(currentExcelRow, c + 1);
-
-                    // Try parsing numbers to store them as actual numbers in Excel (instead of strings)
-                    if (double.TryParse(text.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double num))
+                    for (int c = 0; c < totalCols; c++)
                     {
-                        cell.Value = num;
+                        var cell = worksheet.Cell(currentExcelRow, c + 1);
+                        cell.Value = headers[c];
+
+                        // Formatting headers
+                        cell.Style.Font.Bold = settings.HeaderBold;
+                        if (double.TryParse(settings.HeaderFontSize, out double fontSize))
+                        {
+                            cell.Style.Font.FontSize = fontSize;
+                        }
+
+                        // Apply Header Color
+                        ApplyHeaderStyle(cell, settings.HeaderColorIndex);
+
+                        // Alignments
+                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        cell.Style.Alignment.WrapText = true;
+                    }
+
+                    // Set Header row height
+                    worksheet.Row(currentExcelRow).Height = 26;
+                    currentExcelRow++;
+                }
+
+                // 4. Export Data Body
+                for (int r = 1; r < lines.Length; r++)
+                {
+                    List<string> cells = ParseCsvLine(lines[r]);
+                    if (cells.Count == 0) continue;
+
+                    // Check if this row is a group header (Revit exports group headers with empty rest of cells)
+                    bool isGroupHeader = false;
+                    if (cells.Count > 1 && !string.IsNullOrWhiteSpace(cells[0]))
+                    {
+                        isGroupHeader = true;
+                        for (int c = 1; c < cells.Count; c++)
+                        {
+                            if (!string.IsNullOrWhiteSpace(cells[c]))
+                            {
+                                isGroupHeader = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isGroupHeader)
+                    {
+                        // Write group header spanning across all columns
+                        var cell = worksheet.Cell(currentExcelRow, 1);
+                        cell.Value = cells[0];
+                        cell.Style.Font.Bold = true;
+                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                        cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                        if (totalCols > 1)
+                        {
+                            worksheet.Range(currentExcelRow, 1, currentExcelRow, totalCols).Merge();
+                        }
                     }
                     else
                     {
-                        cell.Value = text;
+                        // Write standard data row
+                        for (int c = 0; c < totalCols; c++)
+                        {
+                            string text = c < cells.Count ? cells[c] : string.Empty;
+                            var cell = worksheet.Cell(currentExcelRow, c + 1);
+
+                            // Try parsing numbers to store them as actual numbers in Excel (instead of strings)
+                            if (double.TryParse(text.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double num))
+                            {
+                                cell.Value = num;
+                            }
+                            else
+                            {
+                                cell.Value = text;
+                            }
+
+                            cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                            // Draw clean thin borders for body cells
+                            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            cell.Style.Border.OutsideBorderColor = XLColor.FromHtml("#D3D3D3");
+                        }
                     }
 
-                    cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                    
-                    // Draw clean thin borders for body cells
-                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    cell.Style.Border.OutsideBorderColor = XLColor.FromHtml("#D3D3D3");
+                    worksheet.Row(currentExcelRow).Height = 20;
+                    currentExcelRow++;
                 }
-                
-                worksheet.Row(currentExcelRow).Height = 20;
-                currentExcelRow++;
-            }
 
-            // 4. Autofit column widths
-            if (settings.Autofit)
-            {
-                worksheet.Columns(1, totalCols).AdjustToContents();
-                // Add minor padding to widths to prevent ### or truncation in Excel
-                for (int c = 1; c <= totalCols; c++)
+                // 5. Autofit column widths
+                if (settings.Autofit)
                 {
-                    var col = worksheet.Column(c);
-                    if (col.Width < 10) col.Width = 10;
-                    else col.Width += 3;
+                    worksheet.Columns(1, totalCols).AdjustToContents();
+                    for (int c = 1; c <= totalCols; c++)
+                    {
+                        var col = worksheet.Column(c);
+                        if (col.Width < 10) col.Width = 10;
+                        else col.Width += 3;
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                if (File.Exists(tempFilePath))
+                {
+                    try { File.Delete(tempFilePath); } catch { }
+                }
+                System.Diagnostics.Debug.WriteLine($"Error exporting schedule: {ex.Message}");
+            }
+        }
+
+        private static List<string> ParseCsvLine(string line)
+        {
+            var cells = new List<string>();
+            bool inQuotes = false;
+            var currentCell = new StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+                if (c == '"')
+                {
+                    if (i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        currentCell.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (c == '\t' && !inQuotes)
+                {
+                    cells.Add(currentCell.ToString());
+                    currentCell.Clear();
+                }
+                else
+                {
+                    currentCell.Append(c);
+                }
+            }
+            cells.Add(currentCell.ToString());
+            return cells;
         }
 
         private void ApplyHeaderStyle(IXLCell cell, int colorIndex)
