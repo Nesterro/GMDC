@@ -5,7 +5,10 @@ $ErrorActionPreference = "Stop"
 
 # 1. Target directory for Revit 2025 Addins
 $addinFolder = "$env:APPDATA\Autodesk\Revit\Addins\2025"
-$sourceDir = "d:\Revit\Plugins\GMDC\bin\Debug\net8.0-windows"
+$sourceDir = "d:\Revit\Plugins\GMDC\bin\Release\net8.0-windows"
+if (!(Test-Path $sourceDir)) {
+    $sourceDir = "d:\Revit\Plugins\GMDC\bin\Debug\net8.0-windows"
+}
 
 # 2. Check if Revit is running (Revit locks assemblies in memory, blocking deployment)
 $revitProcess = Get-Process -Name Revit -ErrorAction SilentlyContinue

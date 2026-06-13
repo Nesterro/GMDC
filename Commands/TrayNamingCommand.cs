@@ -79,8 +79,64 @@ namespace GMDC.Commands
 
                     foreach (var tray in targetTrays)
                     {
+                        bool renamed = false;
                         string resolvedName = TrayNamingWindow.ResolveTemplate(window.NameTemplate, tray);
                         if (Helpers.RevitUtils.SetParameterValue(tray, window.TargetParameter, resolvedName))
+                        {
+                            renamed = true;
+                        }
+
+                        // Optional length writing
+                        bool lengthWritten = false;
+                        if (window.WriteLength)
+                        {
+                            Parameter? srcLenParam = tray.LookupParameter(window.LengthSourceParam);
+                            if (srcLenParam == null)
+                            {
+                                srcLenParam = tray.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
+                            }
+
+                            if (srcLenParam != null)
+                            {
+                                double lengthInFeet = srcLenParam.AsDouble();
+                                Parameter? tgtParam = tray.LookupParameter(window.LengthTargetParam);
+                                if (tgtParam != null && !tgtParam.IsReadOnly)
+                                {
+                                    bool isLengthSpec = false;
+                                    try
+                                    {
+                                        if (tgtParam.Definition.GetDataType() == SpecTypeId.Length)
+                                        {
+                                            isLengthSpec = true;
+                                        }
+                                    }
+                                    catch {}
+
+                                    if (isLengthSpec)
+                                    {
+                                        lengthWritten = tgtParam.Set(lengthInFeet);
+                                    }
+                                    else
+                                    {
+                                        double lengthInMeters = lengthInFeet * 0.3048;
+                                        if (tgtParam.StorageType == StorageType.Double)
+                                        {
+                                            lengthWritten = tgtParam.Set(lengthInMeters);
+                                        }
+                                        else if (tgtParam.StorageType == StorageType.String)
+                                        {
+                                            lengthWritten = tgtParam.Set(lengthInMeters.ToString("F2"));
+                                        }
+                                        else if (tgtParam.StorageType == StorageType.Integer)
+                                        {
+                                            lengthWritten = tgtParam.Set((int)Math.Round(lengthInMeters));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (renamed || lengthWritten)
                         {
                             successCount++;
                         }
@@ -89,7 +145,7 @@ namespace GMDC.Commands
                     trans.Commit();
                 }
 
-                TaskDialog.Show("GMDC Cable Tray Naming", $"Обработка завершена.\nПереименовано лотков: {successCount} из {targetTrays.Count}.");
+                TaskDialog.Show("GMDC Cable Tray Naming", $"Обработка завершена.\nОбработано лотков: {successCount} из {targetTrays.Count}.");
                 return Result.Succeeded;
             }
             catch (Exception ex)

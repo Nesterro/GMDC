@@ -19,6 +19,9 @@ namespace GMDC.UI
         public string SelectedScope { get; private set; } = "Selected"; // "Selected", "View", "Project"
         public string TargetParameter { get; private set; } = string.Empty;
         public string NameTemplate { get; private set; } = string.Empty;
+        public bool WriteLength { get; private set; }
+        public string LengthSourceParam { get; private set; } = string.Empty;
+        public string LengthTargetParam { get; private set; } = string.Empty;
 
         public TrayNamingWindow(Document doc, List<Element> selectedTrays, List<Element> allTrays)
         {
@@ -73,14 +76,85 @@ namespace GMDC.UI
                 TargetParamCombo.SelectedIndex = 0;
             }
 
-            // Style the internal controls of the ComboBox when it loads to override system theme overrides
-            TargetParamCombo.Loaded += (s, e) =>
+            // Populate source parameters for length
+            List<string> sourceLengthParams = new List<string> { "Длина", "Length" };
+            if (_sampleElement != null)
             {
-                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+                // Try to get localized name of system length parameter
+                Parameter? pLen = _sampleElement.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
+                if (pLen != null)
                 {
-                    ForceDarkTheme(TargetParamCombo);
-                }));
+                    string sysName = pLen.Definition.Name;
+                    if (!sourceLengthParams.Contains(sysName))
+                    {
+                        sourceLengthParams.Add(sysName);
+                    }
+                }
+
+                // Add all other double parameters
+                foreach (Parameter p in _sampleElement.Parameters)
+                {
+                    if (p.StorageType == StorageType.Double)
+                    {
+                        string name = p.Definition.Name;
+                        if (!sourceLengthParams.Contains(name))
+                        {
+                            sourceLengthParams.Add(name);
+                        }
+                    }
+                }
+            }
+            LengthSourceCombo.ItemsSource = sourceLengthParams.OrderBy(x => x).ToList();
+            if (LengthSourceCombo.Items.Count > 0)
+            {
+                string preferred = "Длина";
+                if (_sampleElement != null)
+                {
+                    Parameter? pLen = _sampleElement.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
+                    if (pLen != null) preferred = pLen.Definition.Name;
+                }
+                int idx = sourceLengthParams.OrderBy(x => x).ToList().IndexOf(preferred);
+                if (idx == -1) idx = sourceLengthParams.OrderBy(x => x).ToList().IndexOf("Length");
+                LengthSourceCombo.SelectedIndex = idx != -1 ? idx : 0;
+            }
+
+            // Populate target parameters for length (writable parameters + defaults)
+            List<string> targetLengthParams = new List<string> { "ADSK_Количество", "ADSK_Количество_Длина", "Comments", "Mark" };
+            if (_sampleElement != null)
+            {
+                foreach (Parameter p in _sampleElement.Parameters)
+                {
+                    if (!p.IsReadOnly)
+                    {
+                        string name = p.Definition.Name;
+                        if (!targetLengthParams.Contains(name))
+                        {
+                            targetLengthParams.Add(name);
+                        }
+                    }
+                }
+            }
+            LengthTargetCombo.ItemsSource = targetLengthParams.OrderBy(x => x).ToList();
+            if (LengthTargetCombo.Items.Count > 0)
+            {
+                int idx = targetLengthParams.OrderBy(x => x).ToList().IndexOf("ADSK_Количество");
+                LengthTargetCombo.SelectedIndex = idx != -1 ? idx : 0;
+            }
+
+            // Style the internal controls of the ComboBoxes when they load
+            RoutedEventHandler comboLoaded = (s, e) =>
+            {
+                if (s is DependencyObject depObj)
+                {
+                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+                    {
+                        ForceDarkTheme(depObj);
+                    }));
+                }
             };
+            TargetParamCombo.Loaded += comboLoaded;
+            LengthSourceCombo.Loaded += comboLoaded;
+            LengthTargetCombo.Loaded += comboLoaded;
 
             // Load default configuration
             LoadDefaultTemplate();
@@ -151,8 +225,11 @@ namespace GMDC.UI
             var config = new NamingConfig
             {
                 Template = TemplateTextBox.Text,
-                TargetParameter = TargetParamCombo.SelectedItem?.ToString() ?? "Comments",
-                ScopeIndex = ScopeSelectedRadio.IsChecked == true ? 0 : (ScopeViewRadio.IsChecked == true ? 1 : 2)
+                TargetParameter = TargetParamCombo.SelectedItem?.ToString() ?? TargetParamCombo.Text,
+                ScopeIndex = ScopeSelectedRadio.IsChecked == true ? 0 : (ScopeViewRadio.IsChecked == true ? 1 : 2),
+                WriteLength = WriteLengthCheck.IsChecked == true,
+                LengthSourceParam = LengthSourceCombo.SelectedItem?.ToString() ?? LengthSourceCombo.Text,
+                LengthTargetParam = LengthTargetCombo.SelectedItem?.ToString() ?? LengthTargetCombo.Text
             };
             SettingsManager.SaveConfig("tray_naming_config.json", config);
             MessageBox.Show(this, "Шаблон успешно сохранен!", "GMDC Cable Tray Naming", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -209,6 +286,42 @@ namespace GMDC.UI
                 }
             }
 
+            WriteLengthCheck.IsChecked = config.WriteLength;
+            if (LengthSettingsGrid != null)
+            {
+                LengthSettingsGrid.IsEnabled = config.WriteLength;
+            }
+
+            if (!string.IsNullOrEmpty(config.LengthSourceParam))
+            {
+                bool found = false;
+                foreach (var item in LengthSourceCombo.Items)
+                {
+                    if (item.ToString() == config.LengthSourceParam)
+                    {
+                        LengthSourceCombo.SelectedItem = item;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) LengthSourceCombo.Text = config.LengthSourceParam;
+            }
+
+            if (!string.IsNullOrEmpty(config.LengthTargetParam))
+            {
+                bool found = false;
+                foreach (var item in LengthTargetCombo.Items)
+                {
+                    if (item.ToString() == config.LengthTargetParam)
+                    {
+                        LengthTargetCombo.SelectedItem = item;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) LengthTargetCombo.Text = config.LengthTargetParam;
+            }
+
             UpdatePreview();
         }
 
@@ -227,6 +340,24 @@ namespace GMDC.UI
                 return;
             }
 
+            WriteLength = WriteLengthCheck.IsChecked == true;
+            LengthSourceParam = LengthSourceCombo.Text.Trim();
+            LengthTargetParam = LengthTargetCombo.Text.Trim();
+
+            if (WriteLength)
+            {
+                if (string.IsNullOrEmpty(LengthSourceParam))
+                {
+                    MessageBox.Show(this, "Пожалуйста, выберите или введите параметр длины (источник)!", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (string.IsNullOrEmpty(LengthTargetParam))
+                {
+                    MessageBox.Show(this, "Пожалуйста, выберите или введите целевой параметр для записи длины!", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+
             NameTemplate = TemplateTextBox.Text;
             TargetParameter = targetParam;
             
@@ -237,6 +368,14 @@ namespace GMDC.UI
             IsRunRequested = true;
             DialogResult = true;
             Close();
+        }
+
+        private void WriteLengthCheck_Changed(object sender, RoutedEventArgs e)
+        {
+            if (LengthSettingsGrid != null)
+            {
+                LengthSettingsGrid.IsEnabled = WriteLengthCheck.IsChecked == true;
+            }
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
@@ -295,5 +434,8 @@ namespace GMDC.UI
         public string Template { get; set; } = "{Type Name} - {Width}x{Height}";
         public string TargetParameter { get; set; } = "Comments";
         public int ScopeIndex { get; set; } = 0; // 0: Selected, 1: View, 2: Project
+        public bool WriteLength { get; set; } = false;
+        public string LengthSourceParam { get; set; } = "Длина";
+        public string LengthTargetParam { get; set; } = "ADSK_Количество";
     }
 }
