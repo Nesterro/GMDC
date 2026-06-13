@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Autodesk.Revit.DB;
 using GMDC.Helpers;
 
@@ -71,6 +72,38 @@ namespace GMDC.UI
             {
                 TargetParamCombo.SelectedIndex = 0;
             }
+
+            // Style the internal TextBox of the editable ComboBox when it loads to override default system theme colors
+            TargetParamCombo.Loaded += (s, e) =>
+            {
+                var tb = FindVisualChild<TextBox>(TargetParamCombo);
+                if (tb != null)
+                {
+                    var darkBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30)); // #1E1E1E
+                    tb.Background = darkBrush;
+                    tb.Foreground = Brushes.White;
+                    tb.CaretBrush = Brushes.White;
+                    tb.BorderThickness = new Thickness(0);
+                    tb.VerticalContentAlignment = VerticalAlignment.Center;
+                    
+                    // Force the background/foreground to stay dark on focus/input events
+                    tb.GotFocus += (sender, args) =>
+                    {
+                        tb.Background = darkBrush;
+                        tb.Foreground = Brushes.White;
+                    };
+                    tb.LostFocus += (sender, args) =>
+                    {
+                        tb.Background = darkBrush;
+                        tb.Foreground = Brushes.White;
+                    };
+                    tb.TextChanged += (sender, args) =>
+                    {
+                        tb.Background = darkBrush;
+                        tb.Foreground = Brushes.White;
+                    };
+                }
+            };
 
             // Load default configuration
             LoadDefaultTemplate();
@@ -233,6 +266,28 @@ namespace GMDC.UI
         {
             DialogResult = false;
             Close();
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null)
+                {
+                    if (child is T tChild)
+                    {
+                        return tChild;
+                    }
+                    
+                    T? childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                    {
+                        return childOfChild;
+                    }
+                }
+            }
+            return null;
         }
     }
 
