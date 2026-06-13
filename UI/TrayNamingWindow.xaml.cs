@@ -53,8 +53,8 @@ namespace GMDC.UI
             }
             ParametersListBox.ItemsSource = sourceParams.OrderBy(x => x).ToList();
 
-            // Populate target parameter list (writable string parameters)
-            List<string> targetParams = new List<string> { "Comments", "Mark" };
+            // Populate target parameter list (writable string parameters + common defaults)
+            List<string> targetParams = new List<string> { "Comments", "Mark", "ADSK_Наименование", "ADSK_Имя", "Наименование", "Описание" };
             if (_sampleElement != null)
             {
                 var writable = RevitUtils.GetWritableStringParameters(_sampleElement);
@@ -183,13 +183,19 @@ namespace GMDC.UI
 
             if (!string.IsNullOrEmpty(config.TargetParameter))
             {
+                bool found = false;
                 foreach (var item in TargetParamCombo.Items)
                 {
                     if (item.ToString() == config.TargetParameter)
                     {
                         TargetParamCombo.SelectedItem = item;
+                        found = true;
                         break;
                     }
+                }
+                if (!found)
+                {
+                    TargetParamCombo.Text = config.TargetParameter;
                 }
             }
 
@@ -204,14 +210,15 @@ namespace GMDC.UI
                 return;
             }
 
-            if (TargetParamCombo.SelectedItem == null)
+            string targetParam = TargetParamCombo.Text.Trim();
+            if (string.IsNullOrEmpty(targetParam))
             {
-                MessageBox.Show(this, "Пожалуйста, выберите целевой параметр для записи!", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(this, "Пожалуйста, выберите или введите целевой параметр для записи!", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             NameTemplate = TemplateTextBox.Text;
-            TargetParameter = TargetParamCombo.SelectedItem.ToString()!;
+            TargetParameter = targetParam;
             
             if (ScopeSelectedRadio.IsChecked == true) SelectedScope = "Selected";
             else if (ScopeViewRadio.IsChecked == true) SelectedScope = "View";

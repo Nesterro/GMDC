@@ -77,6 +77,8 @@
             <Setter Property="BorderBrush" Value="#3F3F46"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="TextBox.Background" Value="#1E1E1E"/>
+            <Setter Property="TextBox.Foreground" Value="#FFFFFF"/>
             <Style.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="4"/>
@@ -85,6 +87,24 @@
             <Style.Triggers>
                 <Trigger Property="IsDropDownOpen" Value="True">
                     <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern ComboBoxItem Style -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3bb700"/>
+                    <Setter Property="Foreground" Value="#000000"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#2D2D30"/>
+                    <Setter Property="Foreground" Value="#3bb700"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -189,7 +209,7 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsChecked}" Margin="2,4" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="280"/>
+                                    <TextBlock Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="280" Foreground="#E0E0E0"/>
                                 </CheckBox>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

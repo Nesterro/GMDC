@@ -67,6 +67,8 @@
             <Setter Property="BorderBrush" Value="#3F3F46"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="TextBox.Background" Value="#1E1E1E"/>
+            <Setter Property="TextBox.Foreground" Value="#FFFFFF"/>
             <Style.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="4"/>
@@ -75,6 +77,42 @@
             <Style.Triggers>
                 <Trigger Property="IsDropDownOpen" Value="True">
                     <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern ComboBoxItem Style -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3bb700"/>
+                    <Setter Property="Foreground" Value="#000000"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#2D2D30"/>
+                    <Setter Property="Foreground" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern ListBoxItem Style -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2D2D30"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#3bb700"/>
+                    <Setter Property="Foreground" Value="#000000"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -160,18 +198,7 @@
 
                         <!-- Parameters list for selection -->
                         <ListBox Grid.Row="1" x:Name="ParametersListBox" Background="#121212" BorderBrush="#2D2D30" 
-                                 BorderThickness="1" Foreground="#FFFFFF" MouseDoubleClick="ParametersListBox_MouseDoubleClick">
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Padding" Value="6,4"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#2D2D30"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                        </ListBox>
+                                 BorderThickness="1" Foreground="#FFFFFF" MouseDoubleClick="ParametersListBox_MouseDoubleClick"/>
 
                         <TextBlock Grid.Row="2" Text="* Дважды кликните по параметру для вставки в шаблон" 
                                    Foreground="#888888" FontSize="10" Margin="0,5,0,0" TextWrapping="Wrap"/>
@@ -195,7 +222,7 @@
                     <!-- Target Parameter Selection -->
                     <StackPanel Grid.Row="1" Margin="0,0,0,15">
                         <TextBlock Text="Записать в параметр:" Margin="0,0,0,5" Foreground="#888888"/>
-                        <ComboBox x:Name="TargetParamCombo"/>
+                        <ComboBox x:Name="TargetParamCombo" IsEditable="True"/>
                     </StackPanel>
 
                     <!-- Template Textbox -->
