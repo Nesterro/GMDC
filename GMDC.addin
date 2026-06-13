@@ -2,7 +2,7 @@
 <RevitAddIns>
   <AddIn Type="Application">
     <Name>GMDC Plugin</Name>
-    <Assembly>GMDC.dll</Assembly>
+    <Assembly>GMDC\GMDC.dll</Assembly>
     <ClientId>B84F0BD8-B4C1-4D56-A833-F9632822B7E1</ClientId>
     <FullClassName>GMDC.App</FullClassName>
     <VendorId>GMDC</VendorId>
