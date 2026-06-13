@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -148,7 +149,7 @@ namespace GMDC.UI
                 {
                     Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
                     {
-                        ForceDarkTheme(depObj);
+                        WpfThemeHelper.ForceDarkTheme(depObj);
                     }));
                 }
             };
@@ -232,7 +233,9 @@ namespace GMDC.UI
                 LengthTargetParam = LengthTargetCombo.SelectedItem?.ToString() ?? LengthTargetCombo.Text
             };
             SettingsManager.SaveConfig("tray_naming_config.json", config);
-            MessageBox.Show(this, "Шаблон успешно сохранен!", "GMDC Cable Tray Naming", MessageBoxButton.OK, MessageBoxImage.Information);
+            string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GMDC");
+            string filePath = Path.Combine(appData, "tray_naming_config.json");
+            MessageBox.Show(this, $"Конфигурация успешно сохранена в:\n{filePath}", "GMDC Cable Tray Naming", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void LoadTemplate_Click(object sender, RoutedEventArgs e)
@@ -382,50 +385,6 @@ namespace GMDC.UI
         {
             DialogResult = false;
             Close();
-        }
-
-        private static void ForceDarkTheme(DependencyObject obj)
-        {
-            if (obj == null) return;
-
-            var darkBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30)); // #1E1E1E
-            var borderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(63, 63, 70)); // #3F3F46
-
-            if (obj is TextBox tb)
-            {
-                tb.Background = darkBrush;
-                tb.Foreground = Brushes.White;
-                tb.CaretBrush = Brushes.White;
-                tb.BorderThickness = new Thickness(0);
-                tb.VerticalContentAlignment = VerticalAlignment.Center;
-                
-                // Keep colors intact during user interactions
-                tb.GotFocus += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
-                tb.LostFocus += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
-                tb.TextChanged += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
-            }
-            else if (obj is System.Windows.Controls.Primitives.ToggleButton toggleBtn)
-            {
-                toggleBtn.Background = darkBrush;
-                toggleBtn.Foreground = Brushes.White;
-                toggleBtn.BorderBrush = borderBrush;
-            }
-            else if (obj is Border border)
-            {
-                border.Background = darkBrush;
-                border.BorderBrush = borderBrush;
-            }
-            else if (obj is System.Windows.Controls.Control ctrl && !(ctrl is ComboBox))
-            {
-                ctrl.Background = darkBrush;
-                ctrl.Foreground = Brushes.White;
-                ctrl.BorderBrush = borderBrush;
-            }
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                ForceDarkTheme(VisualTreeHelper.GetChild(obj, i));
-            }
         }
     }
 

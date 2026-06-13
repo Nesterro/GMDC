@@ -233,7 +233,7 @@
 
                         <!-- Family Symbol Dropdown -->
                         <TextBlock Text="Семейство крепления:" Margin="0,0,0,5" Foreground="#888888"/>
-                        <ComboBox x:Name="HangerFamilyCombo" Margin="0,0,0,12"/>
+                        <ComboBox x:Name="HangerFamilyCombo" DisplayMemberPath="DisplayName" Margin="0,0,0,12"/>
 
                         <!-- Scope Selection -->
                         <TextBlock Text="Область расстановки:" Margin="0,0,0,5" Foreground="#888888"/>

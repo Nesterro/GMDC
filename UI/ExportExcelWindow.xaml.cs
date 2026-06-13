@@ -40,6 +40,23 @@ namespace GMDC.UI
             _schedulesView.Filter = FilterSchedules;
             SchedulesListBox.ItemsSource = _schedulesView;
 
+            // Style the controls on load
+            RoutedEventHandler controlLoaded = (s, e) =>
+            {
+                if (s is DependencyObject depObj)
+                {
+                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+                    {
+                        WpfThemeHelper.ForceDarkTheme(depObj);
+                    }));
+                }
+            };
+            SearchTextBox.Loaded += controlLoaded;
+            PathTextBox.Loaded += controlLoaded;
+            HeaderColorCombo.Loaded += controlLoaded;
+            HeaderFontSizeCombo.Loaded += controlLoaded;
+            FontFamilyCombo.Loaded += controlLoaded;
+
             // Load default configuration if exists
             LoadDefaultConfig();
         }
@@ -124,7 +141,9 @@ namespace GMDC.UI
         {
             UpdateSettingsFromUI();
             SettingsManager.SaveConfig("export_excel_config.json", Settings);
-            MessageBox.Show(this, "Конфигурация успешно сохранена!", "GMDC Excel Exporter", MessageBoxButton.OK, MessageBoxImage.Information);
+            string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GMDC");
+            string filePath = Path.Combine(appData, "export_excel_config.json");
+            MessageBox.Show(this, $"Конфигурация успешно сохранена в:\n{filePath}", "GMDC Excel Exporter", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void LoadConfig_Click(object sender, RoutedEventArgs e)

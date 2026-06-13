@@ -53,6 +53,23 @@ namespace GMDC.UI
 
             RulesDataGrid.ItemsSource = SpacingRules;
 
+            // Style the controls on load
+            RoutedEventHandler controlLoaded = (s, e) =>
+            {
+                if (s is DependencyObject depObj)
+                {
+                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+                    {
+                        WpfThemeHelper.ForceDarkTheme(depObj);
+                    }));
+                }
+            };
+            HangerFamilyCombo.Loaded += controlLoaded;
+            RotationCombo.Loaded += controlLoaded;
+            StartOffsetTextBox.Loaded += controlLoaded;
+            EndOffsetTextBox.Loaded += controlLoaded;
+            VerticalOffsetTextBox.Loaded += controlLoaded;
+
             // Load default config
             LoadDefaultConfig();
         }
@@ -86,7 +103,9 @@ namespace GMDC.UI
             };
 
             SettingsManager.SaveConfig("hanger_placement_config.json", config);
-            MessageBox.Show(this, "Конфигурация креплений сохранена!", "GMDC Hanger Placement", MessageBoxButton.OK, MessageBoxImage.Information);
+            string appData = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GMDC");
+            string filePath = System.IO.Path.Combine(appData, "hanger_placement_config.json");
+            MessageBox.Show(this, $"Конфигурация креплений сохранена в:\n{filePath}", "GMDC Hanger Placement", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void LoadConfig_Click(object sender, RoutedEventArgs e)
@@ -218,6 +237,7 @@ namespace GMDC.UI
     {
         public string DisplayName => $"{Symbol.Family.Name}: {Symbol.Name}";
         public FamilySymbol Symbol { get; set; } = null!;
+        public override string ToString() => DisplayName;
     }
 
     public class HangerSpacingRule : INotifyPropertyChanged
