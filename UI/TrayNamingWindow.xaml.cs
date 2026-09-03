@@ -71,10 +71,12 @@ namespace GMDC.UI
                     }
                 }
             }
-            TargetParamCombo.ItemsSource = targetParams.OrderBy(x => x).ToList();
-            if (TargetParamCombo.Items.Count > 0)
+            var sortedTargetParams = targetParams.OrderBy(x => x).ToList();
+            TargetParamCombo.ItemsSource = sortedTargetParams;
+            if (sortedTargetParams.Count > 0)
             {
-                TargetParamCombo.SelectedIndex = 0;
+                int idx = sortedTargetParams.IndexOf("ADSK_Наименование");
+                TargetParamCombo.SelectedIndex = idx != -1 ? idx : 0;
             }
 
             // Populate source parameters for length
@@ -142,20 +144,14 @@ namespace GMDC.UI
                 LengthTargetCombo.SelectedIndex = idx != -1 ? idx : 0;
             }
 
-            // Style the internal controls of the ComboBoxes when they load
-            RoutedEventHandler comboLoaded = (s, e) =>
+            // Style the window on load
+            Loaded += (s, e) =>
             {
-                if (s is DependencyObject depObj)
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
                 {
-                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
-                    {
-                        WpfThemeHelper.ForceDarkTheme(depObj);
-                    }));
-                }
+                    WpfThemeHelper.ForceDarkTheme(this);
+                }));
             };
-            TargetParamCombo.Loaded += comboLoaded;
-            LengthSourceCombo.Loaded += comboLoaded;
-            LengthTargetCombo.Loaded += comboLoaded;
 
             // Load default configuration
             LoadDefaultTemplate();
@@ -269,6 +265,11 @@ namespace GMDC.UI
             else if (config.ScopeIndex == 2)
             {
                 ScopeProjectRadio.IsChecked = true;
+            }
+
+            if (string.IsNullOrEmpty(config.TargetParameter) || config.TargetParameter == "Comments")
+            {
+                config.TargetParameter = "ADSK_Наименование";
             }
 
             if (!string.IsNullOrEmpty(config.TargetParameter))
@@ -391,9 +392,9 @@ namespace GMDC.UI
     public class NamingConfig
     {
         public string Template { get; set; } = "{Type Name} - {Width}x{Height}";
-        public string TargetParameter { get; set; } = "Comments";
+        public string TargetParameter { get; set; } = "ADSK_Наименование";
         public int ScopeIndex { get; set; } = 0; // 0: Selected, 1: View, 2: Project
-        public bool WriteLength { get; set; } = false;
+        public bool WriteLength { get; set; } = true;
         public string LengthSourceParam { get; set; } = "Длина";
         public string LengthTargetParam { get; set; } = "ADSK_Количество";
     }

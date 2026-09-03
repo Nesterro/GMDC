@@ -1,7 +1,10 @@
-# Build outputs
+﻿# Build outputs
 bin/
 obj/
 Publish/
+GMDCManager.exe
+UpdateServerMock/
+*.zip
 
 # IDE files
 .vs/
@@ -28,3 +31,6 @@ Desktop.ini
 *export_excel_config.json
 *tray_naming_config.json
 *hanger_placement_config.json
+*dimension_placement_config.json
+*cable_route_config.json
+*wire_tray_config.json

@@ -19,6 +19,7 @@ namespace GMDC.UI
         public double StartOffset { get; private set; } = 300;
         public double EndOffset { get; private set; } = 300;
         public double VerticalOffset { get; private set; } = 0;
+        public double WidthOffset { get; private set; } = 0;
         public double AdditionalRotationAngle { get; private set; } = 0; // in radians
 
         public ObservableCollection<HangerSpacingRule> SpacingRules { get; set; } = new ObservableCollection<HangerSpacingRule>();
@@ -53,22 +54,14 @@ namespace GMDC.UI
 
             RulesDataGrid.ItemsSource = SpacingRules;
 
-            // Style the controls on load
-            RoutedEventHandler controlLoaded = (s, e) =>
+            // Style the window on load
+            Loaded += (s, e) =>
             {
-                if (s is DependencyObject depObj)
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
                 {
-                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
-                    {
-                        WpfThemeHelper.ForceDarkTheme(depObj);
-                    }));
-                }
+                    WpfThemeHelper.ForceDarkTheme(this);
+                }));
             };
-            HangerFamilyCombo.Loaded += controlLoaded;
-            RotationCombo.Loaded += controlLoaded;
-            StartOffsetTextBox.Loaded += controlLoaded;
-            EndOffsetTextBox.Loaded += controlLoaded;
-            VerticalOffsetTextBox.Loaded += controlLoaded;
 
             // Load default config
             LoadDefaultConfig();
@@ -96,6 +89,7 @@ namespace GMDC.UI
                 StartOffset = double.Parse(StartOffsetTextBox.Text),
                 EndOffset = double.Parse(EndOffsetTextBox.Text),
                 VerticalOffset = double.Parse(VerticalOffsetTextBox.Text),
+                WidthOffset = double.Parse(WidthOffsetTextBox.Text),
                 RotationIndex = RotationCombo.SelectedIndex,
                 ScopeIndex = ScopeSelectedRadio.IsChecked == true ? 0 : (ScopeViewRadio.IsChecked == true ? 1 : 2),
                 SelectedFamilyName = (HangerFamilyCombo.SelectedItem as FamilySymbolWrapper)?.DisplayName ?? string.Empty,
@@ -128,6 +122,7 @@ namespace GMDC.UI
                 StartOffset = 300,
                 EndOffset = 300,
                 VerticalOffset = 0,
+                WidthOffset = 0,
                 RotationIndex = 0,
                 ScopeIndex = 0,
                 SelectedFamilyName = string.Empty,
@@ -145,6 +140,7 @@ namespace GMDC.UI
             StartOffsetTextBox.Text = config.StartOffset.ToString();
             EndOffsetTextBox.Text = config.EndOffset.ToString();
             VerticalOffsetTextBox.Text = config.VerticalOffset.ToString();
+            WidthOffsetTextBox.Text = config.WidthOffset.ToString();
             RotationCombo.SelectedIndex = config.RotationIndex;
 
             if (config.ScopeIndex == 0 && ScopeSelectedRadio.IsEnabled)
@@ -190,9 +186,10 @@ namespace GMDC.UI
 
             if (!double.TryParse(StartOffsetTextBox.Text, out double _) ||
                 !double.TryParse(EndOffsetTextBox.Text, out double _) ||
-                !double.TryParse(VerticalOffsetTextBox.Text, out double _))
+                !double.TryParse(VerticalOffsetTextBox.Text, out double _) ||
+                !double.TryParse(WidthOffsetTextBox.Text, out double _))
             {
-                MessageBox.Show(this, "Введены некорректные числовые значения отступов!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, "Введены некорректные числовые значения отступов и смещений!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 
@@ -212,6 +209,7 @@ namespace GMDC.UI
             StartOffset = double.Parse(StartOffsetTextBox.Text);
             EndOffset = double.Parse(EndOffsetTextBox.Text);
             VerticalOffset = double.Parse(VerticalOffsetTextBox.Text);
+            WidthOffset = double.Parse(WidthOffsetTextBox.Text);
 
             // Angle in radians (0, 90, 180, 270)
             int rotIndex = RotationCombo.SelectedIndex;
@@ -269,6 +267,7 @@ namespace GMDC.UI
         public double StartOffset { get; set; } = 300;
         public double EndOffset { get; set; } = 300;
         public double VerticalOffset { get; set; } = 0;
+        public double WidthOffset { get; set; } = 0;
         public int RotationIndex { get; set; } = 0;
         public int ScopeIndex { get; set; } = 0;
         public string SelectedFamilyName { get; set; } = string.Empty;

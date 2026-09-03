@@ -1,0 +1,467 @@
+<Window x:Class="GMDC.UI.CableRouteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GMDC - Прокладка кабеля" Height="640" Width="700"
+        WindowStartupLocation="CenterOwner"
+        Background="#121212" TextElement.Foreground="#E0E0E0"
+        FontFamily="Segoe UI" FontSize="13" ResizeMode="NoResize">
+    <Window.Resources>
+        <!-- Override system brushes so non-editable ComboBox dropdowns use dark colours -->
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}"        Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}"    Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"       Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"   Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"     Color="#3bb700"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#000000"/>
+
+        <!-- Button -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3F3F46"/>
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#3bb700"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#3bb700"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4ce600"/>
+                    <Setter Property="BorderBrush" Value="#4ce600"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- TextBox -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="4"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ComboBox -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#3F3F46"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition MinWidth="20" Width="0" SharedSizeGroup="ComboBoxButton"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Popup x:Name="PART_Popup"
+                                   AllowsTransparency="true"
+                                   Grid.ColumnSpan="2"
+                                   Placement="Bottom"
+                                   IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}">
+                                <Border x:Name="DropDownBorder"
+                                        Background="#1E1E1E"
+                                        BorderBrush="#3F3F46"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        MinWidth="{Binding ActualWidth, ElementName=templateRoot}">
+                                    <ScrollViewer x:Name="DropDownScrollViewer" CanContentScroll="True">
+                                        <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+
+                            <!-- ToggleButton for dropdown action -->
+                            <ToggleButton x:Name="toggleButton"
+                                          Grid.ColumnSpan="2"
+                                          Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="templateRoot"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="4"
+                                                SnapsToDevicePixels="true">
+                                            <!-- Down Arrow Icon -->
+                                            <Grid HorizontalAlignment="Right" Width="20">
+                                                <Path x:Name="Arrow"
+                                                      Data="M 0 0 L 3.5 4 L 7 0 Z"
+                                                      Fill="#E0E0E0"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="true">
+                                                <Setter TargetName="templateRoot" Property="Background" Value="#2D2D30"/>
+                                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="#3bb700"/>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="true">
+                                                <Setter TargetName="templateRoot" Property="Background" Value="#2D2D30"/>
+                                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="#3bb700"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <!-- ContentPresenter for non-editable state -->
+                            <ContentPresenter x:Name="contentPresenter"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                              ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              IsHitTestVisible="false"
+                                              Margin="{TemplateBinding Padding}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+                            <!-- TextBox for editable state -->
+                            <TextBox x:Name="PART_EditableTextBox"
+                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                     IsReadOnly="{TemplateBinding IsReadOnly}"
+                                     Margin="{TemplateBinding Padding}"
+                                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                     Visibility="Collapsed"
+                                     Background="Transparent"
+                                     Foreground="{TemplateBinding Foreground}"
+                                     BorderThickness="0"
+                                     Focusable="true"/>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEditable" Value="true">
+                                <Setter Property="IsTabStop" Value="false"/>
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="contentPresenter" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="toggleButton" Property="BorderBrush" Value="#3bb700"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="true">
+                                <Setter TargetName="toggleButton" Property="BorderBrush" Value="#3bb700"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBoxItem -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3bb700"/>
+                    <Setter Property="Foreground" Value="#000000"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#2D2D30"/>
+                    <Setter Property="Foreground" Value="#3bb700"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- CheckBox -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+
+        <!-- Slider -->
+        <Style TargetType="Slider">
+            <Setter Property="Foreground" Value="#3bb700"/>
+        </Style>
+
+        <!-- Section header -->
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#3bb700"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Card border -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="#2D2D30"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Label style -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#A0A0A0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="0,0,0,3"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Header -->
+            <RowDefinition Height="*"/>
+            <!-- Content -->
+            <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
+        </Grid.RowDefinitions>
+
+        <!-- ═══ HEADER ═══ -->
+        <Border Grid.Row="0" Background="#1A2A12" CornerRadius="6" Padding="14,10" Margin="0,0,0,14">
+            <StackPanel>
+                <TextBlock Text="🔌  Прокладка кабеля" Foreground="#3bb700" FontSize="16" FontWeight="Bold"/>
+                <TextBlock Margin="0,3,0,0" Foreground="#808080" FontSize="11"
+                           Text="Строит 3D-трассу кабеля через выбранные лотки и создаёт DirectShape с параметрами."/>
+            </StackPanel>
+        </Border>
+
+        <!-- ═══ CONTENT ═══ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- ── Режим редактирования ── -->
+                <Border x:Name="EditModeCard" Style="{StaticResource CardBorder}" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Text="Редактирование существующей трассы" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="Плагин обнаружил существующий кабель. Выберите элементы для обновления:" Foreground="#808080" FontSize="11" Margin="0,0,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0" x:Name="RepickPointsCheck" Content="Перевыбрать точки Начало/Конец" IsChecked="False"/>
+                            <CheckBox Grid.Column="2" x:Name="RepickTraysCheck" Content="Перевыбрать лотки трассы" IsChecked="False"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── Идентификация кабеля ── -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Идентификация кабеля" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Назначение -->
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="Назначение / Уровень" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox x:Name="CableLevelCombo" IsEditable="True" Height="30">
+                                    <ComboBoxItem Content="Силовой"/>
+                                    <ComboBoxItem Content="Слаботочный"/>
+                                    <ComboBoxItem Content="Пожарный"/>
+                                    <ComboBoxItem Content="Связь"/>
+                                    <ComboBoxItem Content="Освещение"/>
+                                    <ComboBoxItem Content="Управление"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Марка по схеме -->
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="Марка по схеме (ADSK_Марка)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="CableMarkBox" Height="30" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Наименование -->
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Text="Наименование / Сечение кабеля" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="CableNameBox" Height="30" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Параметр для записи наименования -->
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock Text="Параметр для записи имени" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox x:Name="NameParamCombo" IsEditable="True" Height="30">
+                                    <ComboBoxItem Content="ADSK_Наименование"/>
+                                    <ComboBoxItem Content="Комментарии"/>
+                                    <ComboBoxItem Content="Наименование"/>
+                                    <ComboBoxItem Content="Марка"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Параметр для записи длины -->
+                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="Параметр для записи длины" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox x:Name="LengthParamCombo" IsEditable="True" Height="30">
+                                    <ComboBoxItem Content="ADSK_Количество"/>
+                                    <ComboBoxItem Content="Комментарии"/>
+                                    <ComboBoxItem Content="Марка"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── Геометрия укладки ── -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Геометрия укладки" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Ряд -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Ряд укладки" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox x:Name="RowCombo" Height="30">
+                                    <ComboBoxItem Content="-2 — дальний внутренний" Tag="-2"/>
+                                    <ComboBoxItem Content="-1 — внутренний" Tag="-1"/>
+                                    <ComboBoxItem Content="0 — центр" Tag="0"/>
+                                    <ComboBoxItem Content="+1 — внешний" Tag="+1"/>
+                                    <ComboBoxItem Content="+2 — дальний внешний" Tag="+2"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Шаг между рядами -->
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Шаг рядов, мм" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="RowStepBox" Height="30" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Размер кабеля -->
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Размер кабеля (визуал.), мм" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="CableSizeBox" Height="30" VerticalContentAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── Расчёт длины ── -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Расчёт длины" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="1.2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Коэффициент запаса -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Коэффициент запаса:" VerticalAlignment="Center" Foreground="#E0E0E0"/>
+                            <TextBox Grid.Row="0" Grid.Column="2" x:Name="ReserveTextBox" Text="1.10" HorizontalContentAlignment="Right" ToolTip="Коэффициент запаса (например, 1.10 для +10% к длине)"/>
+
+                            <!-- Round -->
+                            <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="RoundCheck" Content="Округлять до 0.1 м" IsChecked="True" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── Имя DirectShape ── -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Объект DirectShape" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Марка (поле Марка)" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox x:Name="ShapeMarkCombo" IsEditable="True" Height="30">
+                                    <ComboBoxItem Content="Кабель"/>
+                                    <ComboBoxItem Content="Cable"/>
+                                    <ComboBoxItem Content="Провод"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Категория Revit" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox x:Name="CategoryCombo" Height="30">
+                                    <ComboBoxItem Content="Обобщенные модели" Tag="OST_GenericModel"/>
+                                    <ComboBoxItem Content="Кабельные лотки"   Tag="OST_CableTray"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ═══ BUTTONS ═══ -->
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="160"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Отмена" Height="36" Click="Cancel_Click"/>
+            <Button Grid.Column="2" Content="▶  Построить трассу" Height="36"
+                    Style="{StaticResource AccentButton}" Click="Run_Click"/>
+        </Grid>
+    </Grid>
+</Window>

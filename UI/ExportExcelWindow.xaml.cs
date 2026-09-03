@@ -40,22 +40,14 @@ namespace GMDC.UI
             _schedulesView.Filter = FilterSchedules;
             SchedulesListBox.ItemsSource = _schedulesView;
 
-            // Style the controls on load
-            RoutedEventHandler controlLoaded = (s, e) =>
+            // Style the window on load
+            Loaded += (s, e) =>
             {
-                if (s is DependencyObject depObj)
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
                 {
-                    Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
-                    {
-                        WpfThemeHelper.ForceDarkTheme(depObj);
-                    }));
-                }
+                    WpfThemeHelper.ForceDarkTheme(this);
+                }));
             };
-            SearchTextBox.Loaded += controlLoaded;
-            PathTextBox.Loaded += controlLoaded;
-            HeaderColorCombo.Loaded += controlLoaded;
-            HeaderFontSizeCombo.Loaded += controlLoaded;
-            FontFamilyCombo.Loaded += controlLoaded;
 
             // Load default configuration if exists
             LoadDefaultConfig();

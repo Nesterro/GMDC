@@ -29,7 +29,7 @@ namespace GMDC.Helpers
                 tb.LostFocus += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
                 tb.TextChanged += (s, e) => { tb.Background = darkBrush; tb.Foreground = Brushes.White; };
             }
-            else if (obj is ToggleButton toggleBtn)
+            else if (obj is ToggleButton toggleBtn && !(toggleBtn is CheckBox) && !(toggleBtn is RadioButton))
             {
                 toggleBtn.Background = darkBrush;
                 toggleBtn.Foreground = Brushes.White;
@@ -45,7 +45,21 @@ namespace GMDC.Helpers
                     border.BorderBrush = borderBrush;
                 }
             }
-            else if (obj is Control ctrl && !(ctrl is ComboBox) && !(ctrl is ListBox) && !(ctrl is DataGrid) && !(ctrl is Button))
+            if (obj is ComboBox cb)
+            {
+                cb.DropDownOpened -= cb_DropDownOpened; // avoid multiple subscriptions
+                cb.DropDownOpened += cb_DropDownOpened;
+            }
+            else if (obj is Control ctrl && 
+                     !(ctrl is ComboBox) && 
+                     !(ctrl is ListBox) && 
+                     !(ctrl is ListBoxItem) &&
+                     !(ctrl is DataGrid) && 
+                     !(ctrl is DataGridRow) && 
+                     !(ctrl is DataGridCell) && 
+                     !(ctrl is Button) && 
+                     !(ctrl is CheckBox) && 
+                     !(ctrl is RadioButton))
             {
                 ctrl.Background = darkBrush;
                 ctrl.Foreground = Brushes.White;
@@ -55,6 +69,22 @@ namespace GMDC.Helpers
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 ForceDarkTheme(VisualTreeHelper.GetChild(obj, i));
+            }
+        }
+
+        private static void cb_DropDownOpened(object sender, EventArgs e)
+        {
+            if (sender is ComboBox cb)
+            {
+                try
+                {
+                    var popup = cb.Template.FindName("PART_Popup", cb) as Popup;
+                    if (popup != null && popup.Child != null)
+                    {
+                        ForceDarkTheme(popup.Child);
+                    }
+                }
+                catch { }
             }
         }
     }

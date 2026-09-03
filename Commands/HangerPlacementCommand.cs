@@ -165,9 +165,14 @@ namespace GMDC.Commands
                         double trayAngle = Math.Atan2(trayDirection.Y, trayDirection.X);
                         double finalAngle = trayAngle + window.AdditionalRotationAngle;
 
+                        // Perpendicular direction in horizontal XY plane for width offset
+                        XYZ perpDir = new XYZ(-trayDirection.Y, trayDirection.X, 0.0).Normalize();
+                        double widthOffsetFt = Helpers.RevitUtils.MmToFeet(window.WidthOffset);
+                        XYZ widthOffsetVec = perpDir * widthOffsetFt;
+
                         foreach (var pt in points)
                         {
-                            XYZ finalPt = new XYZ(pt.X, pt.Y, pt.Z + zOffsetFt);
+                            XYZ finalPt = new XYZ(pt.X + widthOffsetVec.X, pt.Y + widthOffsetVec.Y, pt.Z + zOffsetFt);
                             
                             // Place Hanger
                             FamilyInstance instance = doc.Create.NewFamilyInstance(finalPt, symbol, StructuralType.NonStructural);

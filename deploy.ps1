@@ -42,7 +42,7 @@ if (!(Test-Path $targetDir)) {
 Remove-Item "$targetDir\*" -Recurse -Force -ErrorAction SilentlyContinue
 
 # Copy new build files
-Copy-Item "$sourceDir\*" -Destination $targetDir -Recurve -Force
+Copy-Item "$sourceDir\*" -Destination $targetDir -Recurse -Force
 Write-Host "Copied build outputs to $targetDir"
 Write-Host "---------------------------------------------------------"
 Write-Host "Deployment completed successfully! You can now start Revit 2025." -ForegroundColor Green

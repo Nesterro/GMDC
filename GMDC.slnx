@@ -1,0 +1,4 @@
+﻿<Solution>
+  <Project Path="GMDC.csproj" />
+  <Project Path="GMDCManager/GMDCManager.csproj" />
+</Solution>

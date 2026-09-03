@@ -172,5 +172,62 @@ namespace GMDC.Helpers
             rt.Freeze();
             return rt;
         }
+
+        public static BitmapSource CreateCableIcon(int size)
+        {
+            var rt = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
+            var dv = new DrawingVisual();
+            double sc = size / 32.0;
+
+            using (var dc = dv.RenderOpen())
+            {
+                var borderPen = new Pen(BlackBrush, 2.5 * sc) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+                var greenPen  = new Pen(GreenBrush,  2.5 * sc) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+                var whitePen  = new Pen(WhiteBrush,  1.8 * sc) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+                borderPen.Freeze(); greenPen.Freeze(); whitePen.Freeze();
+
+                // Cable tray (horizontal rectangle)
+                Rect tray = new Rect(2 * sc, 12 * sc, 28 * sc, 7 * sc);
+                dc.DrawRoundedRectangle(
+                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(40, 40, 40)),
+                    borderPen, tray, 2 * sc, 2 * sc);
+
+                // Cable wire inside tray (green Bezier wave)
+                StreamGeometry wire = new StreamGeometry();
+                using (var ctx = wire.Open())
+                {
+                    ctx.BeginFigure(new Point(4 * sc, 15.5 * sc), false, false);
+                    ctx.BezierTo(
+                        new Point(10 * sc, 10  * sc),
+                        new Point(14 * sc, 21  * sc),
+                        new Point(20 * sc, 15.5 * sc), true, false);
+                    ctx.BezierTo(
+                        new Point(23 * sc, 12  * sc),
+                        new Point(26 * sc, 15.5 * sc),
+                        new Point(28 * sc, 15.5 * sc), true, false);
+                }
+                wire.Freeze();
+                dc.DrawGeometry(null,
+                    new Pen(BlackBrush, 3.5 * sc) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round },
+                    wire);
+                dc.DrawGeometry(null, greenPen, wire);
+
+                // Endpoint dots
+                dc.DrawEllipse(WhiteBrush, borderPen, new Point(4  * sc, 15.5 * sc), 2.5 * sc, 2.5 * sc);
+                dc.DrawEllipse(WhiteBrush, borderPen, new Point(28 * sc, 15.5 * sc), 2.5 * sc, 2.5 * sc);
+
+                // Arrow top-right corner
+                dc.DrawLine(borderPen, new Point(25 * sc, 6  * sc), new Point(30 * sc, 10 * sc));
+                dc.DrawLine(whitePen,  new Point(25 * sc, 6  * sc), new Point(30 * sc, 10 * sc));
+                dc.DrawLine(borderPen, new Point(30 * sc, 10 * sc), new Point(26 * sc, 10 * sc));
+                dc.DrawLine(whitePen,  new Point(30 * sc, 10 * sc), new Point(26 * sc, 10 * sc));
+                dc.DrawLine(borderPen, new Point(30 * sc, 10 * sc), new Point(30 * sc, 6  * sc));
+                dc.DrawLine(whitePen,  new Point(30 * sc, 10 * sc), new Point(30 * sc, 6  * sc));
+            }
+
+            rt.Render(dv);
+            rt.Freeze();
+            return rt;
+        }
     }
 }
