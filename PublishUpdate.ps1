@@ -1,4 +1,4 @@
-﻿param (
+param (
     [Parameter(Mandatory=$true)]
     [string]$Version,
     
@@ -88,7 +88,12 @@ git push origin main
 Write-Host "--- 5. Creating Release and uploading assets to GitHub ---" -ForegroundColor Cyan
 $notes = "GMDC Plugin version $Version released on $date`n`nChanges:`n" + (($Changelog | ForEach-Object { "- $_" }) -join "`n")
 
-gh release delete "v$Version" -y --cleanup-tag 2>$null
+try {
+    $prevEA = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
+    gh release delete "v$Version" -y --cleanup-tag 2>&1 | Out-Null
+    $ErrorActionPreference = $prevEA
+} catch {}
 
 if ($NoManager) {
     gh release create "v$Version" "UpdateServerMock\packages\gmdc_net8.zip" --title "GMDC Plugin v$Version" --notes $notes
