@@ -1,14 +1,14 @@
 ﻿{
-  "latestVersion": "1.0.0",
-  "releaseDate": "2026-09-03",
-  "changelog": [
-    "Добавлен менеджер обновлений GMDCManager",
-    "Исправлен баг обрезки лотков на концах трассы и паразитного спуска кабеля на наклонных участках",
-    "Автоматическая привязка к открытым торцам лотков при выборе начала и конца трассы",
-    "Поддержка Revit 2025"
-  ],
-  "packages": {
-    "net48": "https://github.com/Nesterro/GMDC/releases/download/v1.0.0/gmdc_net8.zip",
-    "net8": "https://github.com/Nesterro/GMDC/releases/download/v1.0.0/gmdc_net8.zip"
-  }
+    "latestVersion":  "1.0.0",
+    "releaseDate":  "2026-09-03",
+    "changelog":  [
+                      "Добавлен менеджер обновлений GMDCManager",
+                      "Исправлен баг обрезки лотков на концах трассы и паразитного спуска кабеля на наклонных участках",
+                      "Автоматическая привязка к открытым торцам лотков при выборе начала и конца трассы",
+                      "Поддержка Revit 2025"
+                  ],
+    "packages":  {
+                     "net48":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.0/gmdc_net8.zip",
+                     "net8":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.0/gmdc_net8.zip"
+                 }
 }
