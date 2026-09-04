@@ -5,8 +5,23 @@ $ErrorActionPreference = "Stop"
 
 # 1. Target directory for Revit 2025 Addins
 $addinFolder = "$env:APPDATA\Autodesk\Revit\Addins\2025"
-$sourceDir = "d:\Revit\Plugins\GMDC\bin\Release\net8.0-windows"
-if (!(Test-Path $sourceDir)) {
+$candidatePaths = @(
+    "d:\Revit\Plugins\GMDC\bin\x64\Release\net8.0-windows",
+    "d:\Revit\Plugins\GMDC\bin\Release\net8.0-windows"
+)
+$sourceDir = $null
+$latestTime = [DateTime]::MinValue
+foreach ($p in $candidatePaths) {
+    $dllPath = Join-Path $p "GMDC.dll"
+    if (Test-Path $dllPath) {
+        $writeTime = (Get-Item $dllPath).LastWriteTime
+        if ($writeTime -gt $latestTime) {
+            $latestTime = $writeTime
+            $sourceDir = $p
+        }
+    }
+}
+if (-not $sourceDir) {
     $sourceDir = "d:\Revit\Plugins\GMDC\bin\Debug\net8.0-windows"
 }
 

@@ -20,13 +20,40 @@ if ($LASTEXITCODE -ne 0) {
 
 # 2. Package plugin into ZIP
 Write-Host "--- 2. Packaging plugin into ZIP archive ---" -ForegroundColor Cyan
-$tempNet8 = "$env:TEMP\GMDC_Net8_Build"
 
+$candidatePaths = @(
+    "bin\x64\Release\net8.0-windows",
+    "bin\Release\net8.0-windows"
+)
+
+$sourceDir = $null
+$latestTime = [DateTime]::MinValue
+
+foreach ($p in $candidatePaths) {
+    $dllPath = Join-Path $p "GMDC.dll"
+    if (Test-Path $dllPath) {
+        $writeTime = (Get-Item $dllPath).LastWriteTime
+        if ($writeTime -gt $latestTime) {
+            $latestTime = $writeTime
+            $sourceDir = $p
+        }
+    }
+}
+
+if (-not $sourceDir) {
+    Write-Error "Could not find built GMDC.dll!"
+    exit 1
+}
+
+$dllVer = [System.Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $sourceDir "GMDC.dll")).ProductVersion
+Write-Host "Packaging GMDC.dll (version $dllVer) from $sourceDir" -ForegroundColor Green
+
+$tempNet8 = "$env:TEMP\GMDC_Net8_Build"
 if (Test-Path $tempNet8) { Remove-Item $tempNet8 -Recurse -Force }
 $null = New-Item -ItemType Directory -Path $tempNet8 -Force
 
 # Copy plugin binaries and addin manifest
-Copy-Item "bin\Release\net8.0-windows\*" -Destination $tempNet8 -Recurse -Force
+Copy-Item "$sourceDir\*" -Destination $tempNet8 -Recurse -Force
 Copy-Item "GMDC.addin" -Destination $tempNet8 -Force
 
 # Create ZIP packages
@@ -35,6 +62,16 @@ $null = New-Item -ItemType Directory -Path $packagesDir -Force
 $zipPath = "$packagesDir\gmdc_net8.zip"
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 Compress-Archive -Path "$tempNet8\*" -DestinationPath $zipPath -Force
+
+# Also deploy directly to local Revit 2025 Addins folder
+$localAddinFolder = "$env:APPDATA\Autodesk\Revit\Addins\2025"
+if (Test-Path $localAddinFolder) {
+    $localGmdcDir = Join-Path $localAddinFolder "GMDC"
+    if (-not (Test-Path $localGmdcDir)) { New-Item -ItemType Directory -Path $localGmdcDir -Force | Out-Null }
+    Copy-Item "$sourceDir\*" -Destination $localGmdcDir -Recurse -Force
+    Copy-Item "GMDC.addin" -Destination $localAddinFolder -Force
+    Write-Host "Updated local Revit 2025 installation at $localGmdcDir" -ForegroundColor Green
+}
 
 Remove-Item $tempNet8 -Recurse -Force
 

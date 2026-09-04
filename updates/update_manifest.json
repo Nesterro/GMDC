@@ -1,13 +1,13 @@
 ﻿{
-    "latestVersion":  "1.0.1",
-    "releaseDate":  "2026-09-03",
+    "latestVersion":  "1.0.2",
+    "releaseDate":  "2026-09-04",
     "changelog":  [
-                      "Исправлена кодировка интерфейса менеджера обновлений",
-                      "Обновлен логотип интерфейса и иконка установщика на фирменный черно-зеленый стиль GMDC",
-                      "Обновлена цветовая тема оформления интерфейса"
+                      "Исправлена загрузка вкладки плагина в Revit 2025 (добавлен обработчик AssemblyLoadContext и безопасная инициализация панели)",
+                      "Исправлена сборка пакета обновления: исключена подстановка устаревшей сборки DLL",
+                      "Исправлен статус проверки обновлений в GMDCManager"
                   ],
     "packages":  {
-                     "net48":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.1/gmdc_net8.zip",
-                     "net8":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.1/gmdc_net8.zip"
+                     "net48":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.2/gmdc_net8.zip",
+                     "net8":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.2/gmdc_net8.zip"
                  }
 }

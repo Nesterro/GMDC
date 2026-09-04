@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -39,10 +39,13 @@ namespace GMDCManager.Services
                     }
                 }
 
-                if (!string.IsNullOrEmpty(installPath))
+                string addinDir = Path.GetDirectoryName(info.AddinPath) ?? string.Empty;
+                bool addinDirExists = Directory.Exists(addinDir);
+
+                if (!string.IsNullOrEmpty(installPath) || addinDirExists)
                 {
                     info.IsRevitInstalled = true;
-                    info.RevitInstallPath = installPath;
+                    info.RevitInstallPath = !string.IsNullOrEmpty(installPath) ? installPath : addinDir;
                 }
                 else
                 {
