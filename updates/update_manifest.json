@@ -1,13 +1,13 @@
-﻿{
-    "latestVersion":  "1.0.2",
-    "releaseDate":  "2026-09-04",
-    "changelog":  [
-                      "Исправлена загрузка вкладки плагина в Revit 2025 (добавлен обработчик AssemblyLoadContext и безопасная инициализация панели)",
-                      "Исправлена сборка пакета обновления: исключена подстановка устаревшей сборки DLL",
-                      "Исправлен статус проверки обновлений в GMDCManager"
-                  ],
-    "packages":  {
-                     "net48":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.2/gmdc_net8.zip",
-                     "net8":  "https://github.com/Nesterro/GMDC/releases/download/v1.0.2/gmdc_net8.zip"
-                 }
+{
+  "latestVersion": "1.0.3",
+  "releaseDate": "2026-10-21",
+  "changelog": [
+    "GMDC Cable Tray Naming: обработка выбранных экземпляров семейств вместе с лотками",
+    "Объединённый список параметров экземпляров и типов, токен имени семейства и обновление списка при смене области",
+    "Проверка источника длины, отчёт о пропусках и ошибках записи, сохранение явно выбранной области"
+  ],
+  "packages": {
+    "net48": "https://github.com/Nesterro/GMDC/releases/download/v1.0.3/gmdc_net8.zip",
+    "net8": "https://github.com/Nesterro/GMDC/releases/download/v1.0.3/gmdc_net8.zip"
+  }
 }
