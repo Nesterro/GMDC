@@ -5,6 +5,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.UI;
+using GMDC.Helpers;
 using GMDC.UI;
 
 namespace GMDC.Commands
@@ -17,135 +18,70 @@ namespace GMDC.Commands
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
-
             try
             {
-                // Gather selections and all elements for the UI setup
-                var selIds = uidoc.Selection.GetElementIds();
-                var selectedTrays = selIds
-                    .Select(id => doc.GetElement(id))
-                    .Where(el => el is CableTray)
+                var selectedElements = uidoc.Selection.GetElementIds()
+                    .Select(doc.GetElement)
+                    .Where(el => el is CableTray || el is FamilyInstance)
                     .ToList();
-
-                var allTrays = new FilteredElementCollector(doc)
-                    .OfClass(typeof(CableTray))
-                    .ToList();
-
-                // Open WPF dialog
-                var window = new TrayNamingWindow(doc, selectedTrays, allTrays);
-                
-                var helper = new System.Windows.Interop.WindowInteropHelper(window)
+                var allTrays = new FilteredElementCollector(doc).OfClass(typeof(CableTray)).ToList();
+                var viewTrays = FilteredElementCollector.IsViewValidForElementIteration(doc, doc.ActiveView.Id)
+                    ? new FilteredElementCollector(doc, doc.ActiveView.Id).OfClass(typeof(CableTray)).ToList()
+                    : new List<Element>();
+                var window = new TrayNamingWindow(doc, selectedElements, viewTrays, allTrays);
+                var helper = new System.Windows.Interop.WindowInteropHelper(window) { Owner = uiapp.MainWindowHandle };
+                if (window.ShowDialog() != true || !window.IsRunRequested) return Result.Cancelled;
+                var targets = window.SelectedScope == "View" ? viewTrays
+                    : window.SelectedScope == "Project" ? allTrays : selectedElements;
+                if (targets.Count == 0)
                 {
-                    Owner = uiapp.MainWindowHandle
-                };
-
-                if (window.ShowDialog() != true || !window.IsRunRequested)
-                {
+                    TaskDialog.Show("GMDC Cable Tray Naming", "Нет подходящих элементов в выбранной области. Выберите лотки или экземпляры семейств.");
                     return Result.Cancelled;
                 }
-
-                // Determine target elements based on chosen scope
-                List<Element> targetTrays;
-                switch (window.SelectedScope)
-                {
-                    case "Selected":
-                        targetTrays = selectedTrays;
-                        break;
-                    case "View":
-                        targetTrays = new FilteredElementCollector(doc, doc.ActiveView.Id)
-                            .OfClass(typeof(CableTray))
-                            .ToList();
-                        break;
-                    case "Project":
-                        targetTrays = allTrays;
-                        break;
-                    default:
-                        targetTrays = selectedTrays;
-                        break;
-                }
-
-                if (!targetTrays.Any())
-                {
-                    TaskDialog.Show("GMDC Cable Tray Naming", "Не найдено лотков для обработки в выбранной области.");
-                    return Result.Cancelled;
-                }
-
-                int successCount = 0;
-
-                // Perform renaming in a Revit transaction
-                using (var trans = new Transaction(doc, "GMDC - Наименование лотков"))
+                int named = 0, lengths = 0;
+                var issues = new List<string>();
+                using (var trans = new Transaction(doc, "GMDC - Наименование элементов"))
                 {
                     trans.Start();
-
-                    foreach (var tray in targetTrays)
+                    foreach (var element in targets)
                     {
-                        bool renamed = false;
-                        string resolvedName = TrayNamingWindow.ResolveTemplate(window.NameTemplate, tray);
-                        if (Helpers.RevitUtils.SetParameterValue(tray, window.TargetParameter, resolvedName))
+                        using var itemTransaction = new SubTransaction(doc);
+                        itemTransaction.Start();
+                        try
                         {
-                            renamed = true;
+                            var target = element.LookupParameter(window.TargetParameter);
+                            bool nameWritten = target != null && !target.IsReadOnly && target.StorageType == StorageType.String
+                                && target.Set(TrayNamingWindow.ResolveTemplate(window.NameTemplate, element));
+                            bool lengthWritten = window.WriteLength && WriteElementLength(element, window.LengthSourceParam, window.LengthTargetParam);
+                            itemTransaction.Commit();
+                            if (nameWritten) named++;
+                            if (lengthWritten) lengths++;
+                            if (!nameWritten || (window.WriteLength && !lengthWritten))
+                                issues.Add($"ID {element.Id}: " + (!nameWritten ? "нет доступного текстового параметра назначения; " : "")
+                                    + (window.WriteLength && !lengthWritten ? "длина не записана (проверьте источник и назначение)" : ""));
                         }
-
-                        // Optional length writing
-                        bool lengthWritten = false;
-                        if (window.WriteLength)
+                        catch (Exception ex)
                         {
-                            Parameter? srcLenParam = tray.LookupParameter(window.LengthSourceParam);
-                            if (srcLenParam == null)
-                            {
-                                srcLenParam = tray.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
-                            }
-
-                            if (srcLenParam != null)
-                            {
-                                double lengthInFeet = srcLenParam.AsDouble();
-                                Parameter? tgtParam = tray.LookupParameter(window.LengthTargetParam);
-                                if (tgtParam != null && !tgtParam.IsReadOnly)
-                                {
-                                    bool isLengthSpec = false;
-                                    try
-                                    {
-                                        if (tgtParam.Definition.GetDataType() == SpecTypeId.Length)
-                                        {
-                                            isLengthSpec = true;
-                                        }
-                                    }
-                                    catch {}
-
-                                    if (isLengthSpec)
-                                    {
-                                        lengthWritten = tgtParam.Set(lengthInFeet);
-                                    }
-                                    else
-                                    {
-                                        double lengthInMeters = lengthInFeet * 0.3048;
-                                        if (tgtParam.StorageType == StorageType.Double)
-                                        {
-                                            lengthWritten = tgtParam.Set(lengthInMeters);
-                                        }
-                                        else if (tgtParam.StorageType == StorageType.String)
-                                        {
-                                            lengthWritten = tgtParam.Set(lengthInMeters.ToString("F2"));
-                                        }
-                                        else if (tgtParam.StorageType == StorageType.Integer)
-                                        {
-                                            lengthWritten = tgtParam.Set((int)Math.Round(lengthInMeters));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (renamed || lengthWritten)
-                        {
-                            successCount++;
+                            if (itemTransaction.GetStatus() == TransactionStatus.Started) itemTransaction.RollBack();
+                            issues.Add($"ID {element.Id}: {ex.Message}");
                         }
                     }
-
-                    trans.Commit();
+                    if (trans.Commit() != TransactionStatus.Committed)
+                    {
+                        message = "Revit отменил запись параметров.";
+                        return Result.Failed;
+                    }
                 }
-
-                TaskDialog.Show("GMDC Cable Tray Naming", $"Обработка завершена.\nОбработано лотков: {successCount} из {targetTrays.Count}.");
+                var report = new TaskDialog("GMDC Cable Tray Naming")
+                {
+                    MainInstruction = "Обработка завершена",
+                    MainContent = $"Элементов: {targets.Count}.\nЗаписано наименований: {named}."
+                        + (window.WriteLength ? $"\nЗаписано значений длины: {lengths}." : "")
+                        + $"\nЭлементов с пропусками или ошибками: {issues.Count}."
+                };
+                if (issues.Count > 0) report.ExpandedContent = string.Join("\n", issues.Take(30))
+                    + (issues.Count > 30 ? $"\n…ещё {issues.Count - 30}." : "");
+                report.Show();
                 return Result.Succeeded;
             }
             catch (Exception ex)
@@ -153,6 +89,28 @@ namespace GMDC.Commands
                 message = ex.Message;
                 return Result.Failed;
             }
+        }
+
+        private static bool WriteElementLength(Element element, string sourceName, string targetName)
+        {
+            var source = RevitUtils.LookupParameterInElementOrType(element, sourceName);
+            // Preserve the localized system-length fallback for cable trays only.
+            if (source == null && element is CableTray)
+                source = element.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
+            if (source == null || !source.HasValue || source.StorageType != StorageType.Double
+                || source.Definition.GetDataType() != SpecTypeId.Length) return false;
+            var target = element.LookupParameter(targetName);
+            if (target == null || target.IsReadOnly) return false;
+            double feet = source.AsDouble();
+            if (target.StorageType == StorageType.Double && target.Definition.GetDataType() == SpecTypeId.Length)
+                return target.Set(feet);
+            double meters = feet * 0.3048;
+            if (target.StorageType == StorageType.Double && target.Definition.GetDataType() == SpecTypeId.Number)
+                return target.Set(meters);
+            if (target.StorageType == StorageType.String) return target.Set(meters.ToString("F2"));
+            if (target.StorageType == StorageType.Integer && target.Definition.GetDataType() == SpecTypeId.Int.Integer)
+                return target.Set((int)Math.Round(meters));
+            return false;
         }
     }
 }

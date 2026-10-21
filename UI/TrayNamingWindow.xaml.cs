@@ -14,7 +14,11 @@ namespace GMDC.UI
     public partial class TrayNamingWindow : Window
     {
         private readonly Document _doc;
-        private readonly Element? _sampleElement;
+        private Element? _sampleElement;
+        private readonly List<Element> _selectedElements;
+        private readonly List<Element> _viewTrays;
+        private readonly List<Element> _allTrays;
+        private bool _ready;
 
         public bool IsRunRequested { get; private set; }
         public string SelectedScope { get; private set; } = "Selected"; // "Selected", "View", "Project"
@@ -24,139 +28,87 @@ namespace GMDC.UI
         public string LengthSourceParam { get; private set; } = string.Empty;
         public string LengthTargetParam { get; private set; } = string.Empty;
 
-        public TrayNamingWindow(Document doc, List<Element> selectedTrays, List<Element> allTrays)
+        public TrayNamingWindow(Document doc, List<Element> selectedElements, List<Element> viewTrays, List<Element> allTrays)
         {
             InitializeComponent();
             _doc = doc;
-
-            // Set up scope selection states
-            if (selectedTrays.Count == 0)
-            {
-                ScopeSelectedRadio.IsEnabled = false;
-                ScopeViewRadio.IsChecked = true;
-            }
-            else
-            {
-                ScopeSelectedRadio.IsChecked = true;
-            }
-
-            // Find a sample element for live preview
-            _sampleElement = selectedTrays.FirstOrDefault() ?? allTrays.FirstOrDefault();
-
-            // Populate source parameters list (common cable tray parameters)
-            List<string> sourceParams = new List<string> { "Type Name", "Width", "Height", "Size" };
-            if (_sampleElement != null)
-            {
-                var uniqueParams = RevitUtils.GetNamingSourceParameters(_sampleElement);
-                foreach (var p in uniqueParams)
-                {
-                    if (!sourceParams.Contains(p))
-                    {
-                        sourceParams.Add(p);
-                    }
-                }
-            }
-            ParametersListBox.ItemsSource = sourceParams.OrderBy(x => x).ToList();
-
-            // Populate target parameter list (writable string parameters + common defaults)
-            List<string> targetParams = new List<string> { "Comments", "Mark", "ADSK_Наименование", "ADSK_Имя", "Наименование", "Описание" };
-            if (_sampleElement != null)
-            {
-                var writable = RevitUtils.GetWritableStringParameters(_sampleElement);
-                foreach (var w in writable)
-                {
-                    if (!targetParams.Contains(w))
-                    {
-                        targetParams.Add(w);
-                    }
-                }
-            }
-            var sortedTargetParams = targetParams.OrderBy(x => x).ToList();
-            TargetParamCombo.ItemsSource = sortedTargetParams;
-            if (sortedTargetParams.Count > 0)
-            {
-                int idx = sortedTargetParams.IndexOf("ADSK_Наименование");
-                TargetParamCombo.SelectedIndex = idx != -1 ? idx : 0;
-            }
-
-            // Populate source parameters for length
-            List<string> sourceLengthParams = new List<string> { "Длина", "Length" };
-            if (_sampleElement != null)
-            {
-                // Try to get localized name of system length parameter
-                Parameter? pLen = _sampleElement.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
-                if (pLen != null)
-                {
-                    string sysName = pLen.Definition.Name;
-                    if (!sourceLengthParams.Contains(sysName))
-                    {
-                        sourceLengthParams.Add(sysName);
-                    }
-                }
-
-                // Add all other double parameters
-                foreach (Parameter p in _sampleElement.Parameters)
-                {
-                    if (p.StorageType == StorageType.Double)
-                    {
-                        string name = p.Definition.Name;
-                        if (!sourceLengthParams.Contains(name))
-                        {
-                            sourceLengthParams.Add(name);
-                        }
-                    }
-                }
-            }
-            LengthSourceCombo.ItemsSource = sourceLengthParams.OrderBy(x => x).ToList();
-            if (LengthSourceCombo.Items.Count > 0)
-            {
-                string preferred = "Длина";
-                if (_sampleElement != null)
-                {
-                    Parameter? pLen = _sampleElement.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH);
-                    if (pLen != null) preferred = pLen.Definition.Name;
-                }
-                int idx = sourceLengthParams.OrderBy(x => x).ToList().IndexOf(preferred);
-                if (idx == -1) idx = sourceLengthParams.OrderBy(x => x).ToList().IndexOf("Length");
-                LengthSourceCombo.SelectedIndex = idx != -1 ? idx : 0;
-            }
-
-            // Populate target parameters for length (writable parameters + defaults)
-            List<string> targetLengthParams = new List<string> { "ADSK_Количество", "ADSK_Количество_Длина", "Comments", "Mark" };
-            if (_sampleElement != null)
-            {
-                foreach (Parameter p in _sampleElement.Parameters)
-                {
-                    if (!p.IsReadOnly)
-                    {
-                        string name = p.Definition.Name;
-                        if (!targetLengthParams.Contains(name))
-                        {
-                            targetLengthParams.Add(name);
-                        }
-                    }
-                }
-            }
-            LengthTargetCombo.ItemsSource = targetLengthParams.OrderBy(x => x).ToList();
-            if (LengthTargetCombo.Items.Count > 0)
-            {
-                int idx = targetLengthParams.OrderBy(x => x).ToList().IndexOf("ADSK_Количество");
-                LengthTargetCombo.SelectedIndex = idx != -1 ? idx : 0;
-            }
-
-            // Style the window on load
-            Loaded += (s, e) =>
-            {
-                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
-                {
-                    WpfThemeHelper.ForceDarkTheme(this);
-                }));
-            };
-
-            // Load default configuration
+            _selectedElements = selectedElements;
+            _viewTrays = viewTrays;
+            _allTrays = allTrays;
+            ScopeSelectedRadio.IsEnabled = selectedElements.Count > 0;
+            ScopeSelectedRadio.IsChecked = selectedElements.Count > 0;
+            ScopeViewRadio.IsChecked = selectedElements.Count == 0;
+            Loaded += (s, e) => Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded,
+                new Action(() => WpfThemeHelper.ForceDarkTheme(this)));
+            _ready = true;
+            RefreshParameters();
             LoadDefaultTemplate();
+            // An explicit selection takes precedence over a previously saved project scope.
+            if (selectedElements.Count > 0) ScopeSelectedRadio.IsChecked = true;
         }
 
+        private void Scope_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_ready) RefreshParameters();
+        }
+
+        private void RefreshParameters()
+        {
+            var elements = ScopeSelectedRadio.IsChecked == true ? _selectedElements
+                : ScopeViewRadio.IsChecked == true ? _viewTrays : _allTrays;
+            _sampleElement = elements.FirstOrDefault();
+            var source = new HashSet<string>();
+            var target = new HashSet<string>();
+            var lengthSource = new HashSet<string>();
+            var lengthTarget = new HashSet<string>();
+            var visitedTypes = new HashSet<ElementId>();
+            foreach (var element in elements)
+            {
+                // Inspect every instance: instance-bound parameters may differ even within one family.
+                foreach (Parameter p in element.Parameters)
+                {
+                    source.Add(p.Definition.Name);
+                    if (!p.IsReadOnly && p.StorageType == StorageType.String) target.Add(p.Definition.Name);
+                    if (IsLength(p)) lengthSource.Add(p.Definition.Name);
+                    if (!p.IsReadOnly && (p.StorageType == StorageType.String
+                        || p.Definition.GetDataType() == SpecTypeId.Length
+                        || p.Definition.GetDataType() == SpecTypeId.Number
+                        || p.Definition.GetDataType() == SpecTypeId.Int.Integer)) lengthTarget.Add(p.Definition.Name);
+                }
+                var typeId = element.GetTypeId();
+                if (typeId != ElementId.InvalidElementId && visitedTypes.Add(typeId))
+                {
+                    var type = _doc.GetElement(typeId);
+                    if (type == null) continue;
+                    foreach (Parameter p in type.Parameters)
+                    {
+                        source.Add(p.Definition.Name);
+                        if (IsLength(p)) lengthSource.Add(p.Definition.Name);
+                    }
+                }
+            }
+            if (elements.Count > 0)
+            {
+                source.UnionWith(new[] { "Type Name", "Family Name" });
+                if (elements.Any(el => el is Autodesk.Revit.DB.Electrical.CableTray))
+                    source.UnionWith(new[] { "Width", "Height", "Size" });
+            }
+            ParametersListBox.ItemsSource = source.OrderBy(x => x).ToList();
+            SetChoices(TargetParamCombo, target, "ADSK_Наименование");
+            SetChoices(LengthSourceCombo, lengthSource, "Длина");
+            SetChoices(LengthTargetCombo, lengthTarget, "ADSK_Количество");
+            UpdatePreview();
+        }
+
+        private static bool IsLength(Parameter p) => p.StorageType == StorageType.Double
+            && p.Definition.GetDataType() == SpecTypeId.Length;
+
+        private static void SetChoices(ComboBox combo, IEnumerable<string> values, string defaultText)
+        {
+            string current = combo.Text;
+            combo.ItemsSource = values.OrderBy(x => x).ToList();
+            combo.Text = string.IsNullOrEmpty(current) ? defaultText : current;
+        }
         private void ParametersListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (ParametersListBox.SelectedItem is string paramName)
@@ -187,7 +139,7 @@ namespace GMDC.UI
 
             if (_sampleElement == null)
             {
-                PreviewTextBlock.Text = "[Нет лотков для предпросмотра]";
+                PreviewTextBlock.Text = "[Нет элементов для предпросмотра]";
                 return;
             }
 
@@ -210,7 +162,7 @@ namespace GMDC.UI
 
                 result = result.Remove(startIndex, endIndex - startIndex + 1);
                 result = result.Insert(startIndex, value);
-                
+
                 startIndex += value.Length;
             }
 
@@ -222,11 +174,11 @@ namespace GMDC.UI
             var config = new NamingConfig
             {
                 Template = TemplateTextBox.Text,
-                TargetParameter = TargetParamCombo.SelectedItem?.ToString() ?? TargetParamCombo.Text,
+                TargetParameter = TargetParamCombo.Text,
                 ScopeIndex = ScopeSelectedRadio.IsChecked == true ? 0 : (ScopeViewRadio.IsChecked == true ? 1 : 2),
                 WriteLength = WriteLengthCheck.IsChecked == true,
-                LengthSourceParam = LengthSourceCombo.SelectedItem?.ToString() ?? LengthSourceCombo.Text,
-                LengthTargetParam = LengthTargetCombo.SelectedItem?.ToString() ?? LengthTargetCombo.Text
+                LengthSourceParam = LengthSourceCombo.Text,
+                LengthTargetParam = LengthTargetCombo.Text
             };
             SettingsManager.SaveConfig("tray_naming_config.json", config);
             string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GMDC");
@@ -243,9 +195,12 @@ namespace GMDC.UI
 
         private void LoadDefaultTemplate()
         {
+            bool familiesOnly = _selectedElements.Count > 0
+                && _selectedElements.All(el => el is FamilyInstance);
             var loaded = SettingsManager.LoadConfig("tray_naming_config.json", new NamingConfig
             {
-                Template = "{Type Name} - {Width}x{Height}"
+                Template = familiesOnly ? "{Family Name} - {Type Name}" : "{Type Name} - {Width}x{Height}",
+                WriteLength = !familiesOnly
             });
             ApplyConfig(loaded);
         }
@@ -253,7 +208,7 @@ namespace GMDC.UI
         private void ApplyConfig(NamingConfig config)
         {
             TemplateTextBox.Text = config.Template;
-            
+
             if (config.ScopeIndex == 0 && ScopeSelectedRadio.IsEnabled)
             {
                 ScopeSelectedRadio.IsChecked = true;
@@ -267,7 +222,7 @@ namespace GMDC.UI
                 ScopeProjectRadio.IsChecked = true;
             }
 
-            if (string.IsNullOrEmpty(config.TargetParameter) || config.TargetParameter == "Comments")
+            if (string.IsNullOrEmpty(config.TargetParameter))
             {
                 config.TargetParameter = "ADSK_Наименование";
             }
@@ -350,6 +305,11 @@ namespace GMDC.UI
 
             if (WriteLength)
             {
+                if (string.Equals(targetParam, LengthTargetParam, StringComparison.Ordinal))
+                {
+                    MessageBox.Show(this, "Для наименования и длины выберите разные целевые параметры.", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 if (string.IsNullOrEmpty(LengthSourceParam))
                 {
                     MessageBox.Show(this, "Пожалуйста, выберите или введите параметр длины (источник)!", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -364,7 +324,7 @@ namespace GMDC.UI
 
             NameTemplate = TemplateTextBox.Text;
             TargetParameter = targetParam;
-            
+
             if (ScopeSelectedRadio.IsChecked == true) SelectedScope = "Selected";
             else if (ScopeViewRadio.IsChecked == true) SelectedScope = "View";
             else SelectedScope = "Project";
