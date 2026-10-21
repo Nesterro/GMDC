@@ -62,7 +62,11 @@ namespace GMDC.Helpers
             }
             if (paramName == "Type Name" || paramName == "Имя типа")
             {
-                return element.Name;
+                return element.Document.GetElement(element.GetTypeId())?.Name ?? element.Name;
+            }
+            if (paramName == "Family Name" || paramName == "Имя семейства")
+            {
+                return (element.Document.GetElement(element.GetTypeId()) as ElementType)?.FamilyName ?? string.Empty;
             }
 
             Parameter? param = LookupParameterInElementOrType(element, paramName);
@@ -139,7 +143,7 @@ namespace GMDC.Helpers
         /// </summary>
         public static List<string> GetNamingSourceParameters(Element element)
         {
-            var set = new HashSet<string> { "Type Name", "Width", "Height", "Size", "Comments", "Mark" };
+            var set = new HashSet<string> { "Type Name", "Family Name", "Width", "Height", "Size", "Comments", "Mark" };
             foreach (Parameter p in element.Parameters)
             {
                 set.Add(p.Definition.Name);
