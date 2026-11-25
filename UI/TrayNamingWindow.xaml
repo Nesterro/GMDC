@@ -1,7 +1,7 @@
 <Window x:Class="GMDC.UI.TrayNamingWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="GMDC - Наименование лотков и семейств" Height="640" Width="860"
+        Title="GMDC - Наименования" Height="640" Width="860"
         WindowStartupLocation="CenterOwner"
         Background="#121212" TextElement.Foreground="#E0E0E0"
         FontFamily="Segoe UI" FontSize="13" ResizeMode="NoResize">
@@ -271,7 +271,7 @@
         <!-- Title -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,0,5,15">
             <Border Width="12" Height="24" Background="#3bb700" CornerRadius="2" Margin="0,0,10,0"/>
-            <TextBlock Text="GMDC CABLE TRAY NAMING" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+            <TextBlock Text="НАИМЕНОВАНИЯ" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Content Area -->
@@ -293,10 +293,10 @@
                 <!-- Scope Selection Card -->
                 <Border Grid.Row="0" Style="{StaticResource CardBorder}">
                     <StackPanel>
-                        <TextBlock Text="Область обработки" Style="{StaticResource SectionHeader}"/>
-                        <RadioButton x:Name="ScopeSelectedRadio" Content="Выбранные лотки и семейства" IsChecked="True" Checked="Scope_Changed"/>
-                        <RadioButton x:Name="ScopeViewRadio" Content="Лотки на активном виде" Checked="Scope_Changed"/>
-                        <RadioButton x:Name="ScopeProjectRadio" Content="Все лотки в проекте" Checked="Scope_Changed"/>
+                        <TextBlock Text="Какие элементы обработать" Style="{StaticResource SectionHeader}"/>
+                        <RadioButton x:Name="ScopeSelectedRadio" Content="Выбранные элементы (лотки и семейства)" IsChecked="True" Checked="Scope_Changed"/>
+                        <RadioButton x:Name="ScopeViewRadio" Content="Только лотки активного вида" Checked="Scope_Changed"/>
+                        <RadioButton x:Name="ScopeProjectRadio" Content="Только лотки всего проекта" Checked="Scope_Changed"/>
                     </StackPanel>
                 </Border>
 

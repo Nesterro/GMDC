@@ -120,7 +120,7 @@ namespace GMDC
                 {
                     var btnNamingData = new PushButtonData(
                         "TrayNamingButton",
-                        "Имя\nлотка",
+                        "Наименования",
                         assemblyPath,
                         "GMDC.Commands.TrayNamingCommand"
                     )
@@ -135,6 +135,25 @@ namespace GMDC
                 catch (Exception ex)
                 {
                     LogStartupError("TrayNamingButton", ex);
+                }
+
+                try
+                {
+                    var batchParameters = new PushButtonData(
+                        "BatchParametersButton",
+                        "Добавить\nпараметры",
+                        assemblyPath,
+                        "GMDC.Commands.BatchParametersCommand")
+                    {
+                        ToolTip = "Пакетно добавляет общие параметры из ФОП в открытое семейство или проект.",
+                        LargeImage = IconGenerator.CreateNamingIcon(32),
+                        Image = IconGenerator.CreateNamingIcon(16)
+                    };
+                    panel.AddItem(batchParameters);
+                }
+                catch (Exception ex)
+                {
+                    LogStartupError("BatchParametersButton", ex);
                 }
 
                 // 6. Button 3: Hanger Placement

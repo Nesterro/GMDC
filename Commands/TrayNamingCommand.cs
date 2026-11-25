@@ -35,7 +35,7 @@ namespace GMDC.Commands
                     : window.SelectedScope == "Project" ? allTrays : selectedElements;
                 if (targets.Count == 0)
                 {
-                    TaskDialog.Show("GMDC Cable Tray Naming", "Нет подходящих элементов в выбранной области. Выберите лотки или экземпляры семейств.");
+                    TaskDialog.Show("GMDC - Наименования", "Нет подходящих элементов в выбранной области. Выберите лотки или экземпляры семейств.");
                     return Result.Cancelled;
                 }
                 int named = 0, lengths = 0;
@@ -72,7 +72,7 @@ namespace GMDC.Commands
                         return Result.Failed;
                     }
                 }
-                var report = new TaskDialog("GMDC Cable Tray Naming")
+                var report = new TaskDialog("GMDC - Наименования")
                 {
                     MainInstruction = "Обработка завершена",
                     MainContent = $"Элементов: {targets.Count}.\nЗаписано наименований: {named}."
