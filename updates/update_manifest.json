@@ -1,13 +1,12 @@
 {
-  "latestVersion": "1.0.3",
-  "releaseDate": "2026-10-21",
+  "latestVersion": "1.0.4",
+  "releaseDate": "2026-11-25",
   "changelog": [
-    "GMDC Cable Tray Naming: обработка выбранных экземпляров семейств вместе с лотками",
-    "Объединённый список параметров экземпляров и типов, токен имени семейства и обновление списка при смене области",
-    "Проверка источника длины, отчёт о пропусках и ошибках записи, сохранение явно выбранной области"
+    "Кнопка и окно «Наименования» получили новые подписи.",
+    "Пакетное добавление общих параметров из ФОП в семейство или проект."
   ],
   "packages": {
-    "net48": "https://github.com/Nesterro/GMDC/releases/download/v1.0.3/gmdc_net8.zip",
-    "net8": "https://github.com/Nesterro/GMDC/releases/download/v1.0.3/gmdc_net8.zip"
+    "net48": "https://github.com/Nesterro/GMDC/releases/download/v1.0.4/gmdc_net8.zip",
+    "net8": "https://github.com/Nesterro/GMDC/releases/download/v1.0.4/gmdc_net8.zip"
   }
 }
