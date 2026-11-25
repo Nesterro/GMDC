@@ -1,0 +1,130 @@
+<Window x:Class="GMDC.UI.BatchParametersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GMDC — Пакетное добавление параметров" Width="1080" Height="660"
+        MinWidth="820" MinHeight="450" WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI" FontSize="13" Background="#F4F6F8">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="MinHeight" Value="30"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="MinHeight" Value="26"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="TargetLabel" FontSize="17" FontWeight="SemiBold"
+                   TextTrimming="CharacterEllipsis" Margin="0,0,0,10"/>
+        <DockPanel Grid.Row="1" Margin="0,0,0,12">
+            <Button DockPanel.Dock="Right" Content="Выбрать ФОП…" Click="BrowseFile" Margin="8,0,0,0"/>
+            <TextBlock DockPanel.Dock="Left" Text="Файл общих параметров" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBox x:Name="FilePath" IsReadOnly="True" Text="Файл не выбран"/>
+        </DockPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="CategoriesColumn" Width="245"/>
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <DockPanel Margin="0,0,0,6">
+                    <CheckBox x:Name="SelectedOnly" DockPanel.Dock="Right" Content="Только отмеченные"
+                              VerticalAlignment="Center" Margin="10,0,0,0" Click="FilterParameters"/>
+                    <TextBlock DockPanel.Dock="Left" Text="Поиск" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBox x:Name="ParameterSearch" AutomationProperties.Name="Поиск параметров по имени или группе ФОП"
+                             ToolTip="Поиск по имени параметра или группе ФОП" TextChanged="FilterParameters"/>
+                </DockPanel>
+                <WrapPanel Grid.Row="1" Margin="0,0,0,6">
+                    <Button Content="Отметить найденные" Click="SelectVisible" Margin="0,0,8,0"/>
+                    <Button Content="Снять все отметки" Click="ClearParameters"/>
+                </WrapPanel>
+                <DataGrid x:Name="ParameterTable" Grid.Row="2" AutoGenerateColumns="False"
+                          IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" AlternatingRowBackground="#F4F6F8"
+                          EnableRowVirtualization="True" RowHeight="32">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="✓" Width="38">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              AutomationProperties.Name="{Binding Name}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Параметр" Binding="{Binding Name}" IsReadOnly="True" Width="2*" MinWidth="130"/>
+                        <DataGridTextColumn Header="Группа ФОП" Binding="{Binding SourceGroup}" IsReadOnly="True" Width="*" MinWidth="92"/>
+                        <DataGridTemplateColumn Header="Привязка" Width="122">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" Margin="3,1"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Группа в Revit" Width="155">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding Groups}" SelectedItem="{Binding Group}" Margin="3,1"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+            <Grid x:Name="CategoryPane" Grid.Column="1" Margin="14,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Категории проекта" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <TextBox x:Name="CategorySearch" Grid.Row="1" AutomationProperties.Name="Поиск категорий"
+                         ToolTip="Поиск категорий" TextChanged="FilterCategories" Margin="0,0,0,6"/>
+                <WrapPanel Grid.Row="2" Margin="0,0,0,6">
+                    <Button Content="Отметить найденные" Click="SelectCategories" Margin="0,0,6,0"/>
+                    <Button Content="Снять все" Click="ClearCategories"/>
+                </WrapPanel>
+                <ListBox x:Name="CategoryList" Grid.Row="3" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Content="{Binding Name}" ToolTip="{Binding Name}" Padding="3"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+        <WrapPanel Grid.Row="3" Margin="0,10,0,0">
+            <TextBlock Text="Для отмеченных" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <ComboBox x:Name="BulkMode" Width="122" Margin="0,0,6,0" AutomationProperties.Name="Привязка для отмеченных"/>
+            <ComboBox x:Name="BulkGroup" Width="160" Margin="0,0,6,0" AutomationProperties.Name="Группа Revit для отмеченных"/>
+            <Button x:Name="ApplyBulk" Content="Применить настройки" Click="ApplyBulkSettings"/>
+        </WrapPanel>
+        <DockPanel Grid.Row="4" Margin="0,12,0,0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button x:Name="AddButton" Content="Добавить" IsDefault="True" MinWidth="98"
+                        Click="Confirm" Background="#DCEBBC" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                <Button Content="Отмена" IsCancel="True" MinWidth="80"/>
+            </StackPanel>
+            <TextBlock x:Name="Summary" VerticalAlignment="Center"/>
+        </DockPanel>
+    </Grid>
+</Window>
