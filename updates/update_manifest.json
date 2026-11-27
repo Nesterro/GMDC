@@ -1,13 +1,11 @@
 {
-  "latestVersion": "1.0.5",
-  "releaseDate": "2026-11-25",
+  "latestVersion": "1.0.6",
+  "releaseDate": "2026-11-27",
   "changelog": [
-    "Новый интерфейс пакетного добавления параметров: выбор ФОП и поиск в одном окне.",
-    "Отметки сохраняются при фильтрации. Доступны поиск категорий и общий выбор найденных позиций.",
-    "Группу Revit и привязку «Экземпляр» или «Тип» можно задать для каждой строки или сразу для отмеченных."
+    "Выбор группы Revit, в том числе «Общие», сразу применяется к отмеченным параметрам. Выбор группы не меняет привязку «Экземпляр» или «Тип»."
   ],
   "packages": {
-    "net48": "https://github.com/Nesterro/GMDC/releases/download/v1.0.5/gmdc_net8.zip",
-    "net8": "https://github.com/Nesterro/GMDC/releases/download/v1.0.5/gmdc_net8.zip"
+    "net48": "https://github.com/Nesterro/GMDC/releases/download/v1.0.6/gmdc_net8.zip",
+    "net8": "https://github.com/Nesterro/GMDC/releases/download/v1.0.6/gmdc_net8.zip"
   }
 }
