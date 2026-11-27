@@ -74,14 +74,14 @@
                         <DataGridTemplateColumn Header="Привязка" Width="122">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" Margin="3,1"/>
+                                    <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3,1"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="Группа в Revit" Width="155">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <ComboBox ItemsSource="{Binding Groups}" SelectedItem="{Binding Group}" Margin="3,1"/>
+                                    <ComboBox ItemsSource="{Binding Groups}" SelectedItem="{Binding Group, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="3,1"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -113,10 +113,11 @@
             </Grid>
         </Grid>
         <WrapPanel Grid.Row="3" Margin="0,10,0,0">
-            <TextBlock Text="Для отмеченных" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <ComboBox x:Name="BulkMode" Width="122" Margin="0,0,6,0" AutomationProperties.Name="Привязка для отмеченных"/>
-            <ComboBox x:Name="BulkGroup" Width="160" Margin="0,0,6,0" AutomationProperties.Name="Группа Revit для отмеченных"/>
-            <Button x:Name="ApplyBulk" Content="Применить настройки" Click="ApplyBulkSettings"/>
+            <TextBlock Text="Для отмеченных" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <TextBlock Text="Привязка" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            <ComboBox x:Name="BulkMode" Width="122" Margin="0,0,12,0" AutomationProperties.Name="Привязка для отмеченных"/>
+            <TextBlock Text="Группа Revit" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            <ComboBox x:Name="BulkGroup" Width="160" AutomationProperties.Name="Группа Revit для отмеченных"/>
         </WrapPanel>
         <DockPanel Grid.Row="4" Margin="0,12,0,0">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">

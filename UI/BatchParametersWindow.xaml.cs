@@ -49,9 +49,9 @@ public partial class BatchParametersWindow : Window
         }
 
         BulkMode.ItemsSource = Modes;
-        BulkMode.SelectedIndex = 0;
         BulkGroup.ItemsSource = groups;
-        BulkGroup.SelectedItem = defaultGroup;
+        BulkMode.SelectionChanged += ApplyBulkMode;
+        BulkGroup.SelectionChanged += ApplyBulkGroup;
         if (System.IO.File.Exists(configuredPath))
             LoadFile(configuredPath);
         RefreshSelection();
@@ -163,19 +163,29 @@ public partial class BatchParametersWindow : Window
             : family
                 ? $"Отмечено параметров: {count}"
                 : $"Отмечено параметров: {count}     Выбрано категорий: {categoryCount}";
-        ApplyBulk.IsEnabled = count > 0;
+        BulkMode.IsEnabled = count > 0;
+        BulkGroup.IsEnabled = count > 0;
         AddButton.IsEnabled = count > 0 && (family || categoryCount > 0);
     }
 
-    private void ApplyBulkSettings(object sender, RoutedEventArgs args)
+    private void ApplyBulkMode(object sender, RoutedEventArgs args)
     {
-        var mode = (ModeChoice)BulkMode.SelectedItem;
-        var group = (GroupChoice)BulkGroup.SelectedItem;
+        if (BulkMode.SelectedItem is not ModeChoice mode)
+            return;
+
         foreach (var row in parameters.Where(row => row.Selected))
-        {
             row.Mode = mode;
+        BulkMode.SelectedIndex = -1;
+    }
+
+    private void ApplyBulkGroup(object sender, RoutedEventArgs args)
+    {
+        if (BulkGroup.SelectedItem is not GroupChoice group)
+            return;
+
+        foreach (var row in parameters.Where(row => row.Selected))
             row.Group = group;
-        }
+        BulkGroup.SelectedIndex = -1;
     }
 
     private void Confirm(object sender, RoutedEventArgs args) => DialogResult = true;
